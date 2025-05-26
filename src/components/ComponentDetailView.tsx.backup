@@ -1,0 +1,4035 @@
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { 
+  Copy, 
+  Check, 
+  Download, 
+  Code, 
+  Eye, 
+  Settings, 
+  BookOpen, 
+  Zap,
+  Star,
+  Heart,
+  Play,
+  Pause,
+  RotateCcw,
+  ChevronLeft,
+  ChevronRight,
+  Info,
+  Package,
+  Monitor,
+  Smartphone,
+  Tablet,
+  Search,
+  Filter,
+  Home,
+  Grid3X3,
+  Plus,
+  Target,
+  Layers,
+  User,
+  ShoppingCart,
+  MessageSquare,
+  CheckCircle,
+  AlertTriangle,
+  AlertCircle,
+  X,
+  Rocket,
+  Palette,
+  TestTube
+} from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Button } from './ui/Button';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
+import { Tabs } from './ui/Tabs';
+import { Badge } from './ui/Badge';
+import { useToast, type Toast } from './ui/Toast';
+import type { ComponentItem } from './ComponentNavigation';
+import { Tooltip } from './ui/Tooltip';
+import { Dropdown } from './ui/Dropdown';
+import { Switch } from './ui/Switch';
+import { Input } from './ui/Input';
+import { Select } from './ui/Select';
+import { Slider } from './ui/Slider';
+import { DatePicker } from './ui/DatePicker';
+import { Accordion } from './ui/Accordion';
+import { Modal } from './ui/Modal';
+import { DataTable } from './ui/DataTable';
+import { DataVisualization } from './ui/DataVisualization';
+import { AdvancedDataViz } from './ui/AdvancedDataViz';
+import { Avatar } from './ui/Avatar';
+import { useToast, type Toast } from './ui/Toast';
+import { Notification } from './ui/Notification';
+import { Progress } from './ui/Progress';
+import { Popover } from './ui/Popover';
+import { Carousel } from './ui/Carousel';
+import { CommandPalette } from './ui/CommandPalette';
+import { FileManager } from './ui/FileManager';
+import { KanbanBoard } from './ui/KanbanBoard';
+import { RichTextEditor } from './ui/RichTextEditor';
+import { SmartForm } from './ui/SmartForm';
+import { Timeline } from './ui/Timeline';
+
+interface ComponentDetailViewProps {
+  component: ComponentItem;
+  onBack: () => void;
+  onNext?: () => void;
+  onPrevious?: () => void;
+}
+
+interface CodeExample {
+  title: string;
+  description: string;
+  code: string;
+  language: 'tsx' | 'jsx' | 'css' | 'json';
+  category: 'basic' | 'advanced' | 'custom' | 'integration';
+}
+
+interface ComponentProperty {
+  name: string;
+  type: string;
+  required: boolean;
+  default?: string;
+  description: string;
+  examples?: string[];
+}
+
+interface UsageExample {
+  title: string;
+  description: string;
+  scenario: string;
+  code: string;
+  preview?: React.ReactNode;
+}
+
+const getComponentExamples = (componentId: string): CodeExample[] => {
+  const examples: Record<string, CodeExample[]> = {
+    button: [
+      {
+        title: 'Basic Usage',
+        description: 'Simple button with different variants',
+        language: 'tsx' as const,
+        category: 'basic' as const,
+        code: `import { Button } from '@/components/ui/Button';
+
+export function BasicButtons() {
+  return (
+    <div className="flex gap-4">
+      <Button variant="default">Default</Button>
+      <Button variant="premium">Premium</Button>
+      <Button variant="neon">Neon</Button>
+      <Button variant="glass">Glass</Button>
+    </div>
+  );
+}`
+      },
+      {
+        title: 'With Icons and Loading',
+        description: 'Buttons with icons and loading states',
+        language: 'tsx' as const,
+        category: 'advanced' as const,
+        code: `import { Button } from '@/components/ui/Button';
+import { Download, Heart, Star } from 'lucide-react';
+import { useState } from 'react';
+
+export function IconButtons() {
+  const [loading, setLoading] = useState(false);
+  
+  const handleDownload = async () => {
+    setLoading(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setLoading(false);
+  };
+
+  return (
+    <div className="flex gap-4">
+      <Button 
+        leftIcon={<Download />}
+        onClick={handleDownload}
+        loading={loading}
+      >
+        Download
+      </Button>
+      <Button variant="outline" rightIcon={<Heart />}>
+        Like
+      </Button>
+      <Button variant="ghost" leftIcon={<Star />}>
+        Favorite
+      </Button>
+    </div>
+  );
+}`
+      }
+    ],
+    card: [
+      {
+        title: 'Basic Card Layout',
+        description: 'Standard card with header and content',
+        language: 'tsx' as const,
+        category: 'basic' as const,
+        code: `import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+
+export function BasicCard() {
+  return (
+    <Card variant="elevated">
+      <CardHeader>
+        <CardTitle>Card Title</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p>This is the card content area where you can place any content.</p>
+      </CardContent>
+    </Card>
+  );
+}`
+      },
+      {
+        title: 'Advanced Card with Actions',
+        description: 'Card with interactive elements and custom styling',
+        language: 'tsx' as const,
+        category: 'advanced' as const,
+        code: `import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { Heart, Share, MoreHorizontal } from 'lucide-react';
+
+export function AdvancedCard() {
+  return (
+    <Card variant="gradient" className="max-w-md">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img 
+              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e" 
+              alt="User" 
+              className="w-10 h-10 rounded-full"
+            />
+            <div>
+              <CardTitle className="text-white">John Doe</CardTitle>
+              <p className="text-white/80 text-sm">2 hours ago</p>
+            </div>
+          </div>
+          <Badge variant="success">New</Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="text-white/90 mb-4">
+          Just shipped a new feature! Check out our latest component library update.
+        </p>
+        <div className="flex items-center justify-between">
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" leftIcon={<Heart />}>
+              24
+            </Button>
+            <Button variant="ghost" size="sm" leftIcon={<Share />}>
+              Share
+            </Button>
+          </div>
+          <Button variant="ghost" size="sm">
+            <MoreHorizontal className="w-4 h-4" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}`
+      }
+    ],
+    input: [
+      {
+        title: 'Basic Input Fields',
+        description: 'Standard input fields with validation',
+        language: 'tsx' as const,
+        category: 'basic' as const,
+        code: `import { Input } from '@/components/ui/Input';
+import { useState } from 'react';
+
+export function BasicInputs() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  return (
+    <div className="space-y-4">
+      <Input
+        type="email"
+        placeholder="Enter your email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        label="Email Address"
+        required
+      />
+      <Input
+        type="password"
+        placeholder="Enter your password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        label="Password"
+        required
+        showPasswordToggle
+      />
+    </div>
+  );
+}`
+      },
+      {
+        title: 'Advanced Input with Validation',
+        description: 'Input with real-time validation and error states',
+        language: 'tsx' as const,
+        category: 'advanced' as const,
+        code: `import { Input } from '@/components/ui/Input';
+import { useState } from 'react';
+import { Mail } from 'lucide-react';
+
+export function ValidatedInput() {
+  const [value, setValue] = useState('');
+  const [error, setError] = useState('');
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    if (!email) {
+      setError('Email is required');
+    } else if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+    } else {
+      setError('');
+    }
+  };
+
+  return (
+    <Input
+      type="email"
+      value={value}
+      onChange={(e) => {
+        setValue(e.target.value);
+        validateEmail(e.target.value);
+      }}
+      label="Email Address"
+      placeholder="user@example.com"
+      error={error}
+      success={value && !error}
+      helperText="We'll never share your email with anyone else"
+      leftIcon={<Mail />}
+      variant="modern"
+    />
+  );
+}`
+      }
+    ],
+    tooltip: [
+      {
+        title: 'Basic Tooltip',
+        description: 'Simple tooltip with different variants',
+        language: 'tsx' as const,
+        category: 'basic' as const,
+        code: `import { Tooltip } from '@/components/ui/Tooltip';
+import { Button } from '@/components/ui/Button';
+
+export function BasicTooltips() {
+  return (
+    <div className="flex gap-4">
+      <Tooltip content="Default tooltip">
+        <Button>Hover me</Button>
+      </Tooltip>
+      
+      <Tooltip content="Neon tooltip" variant="neon">
+        <Button variant="neon">Neon style</Button>
+      </Tooltip>
+      
+      <Tooltip content="Glass tooltip" variant="glass">
+        <Button variant="glass">Glass style</Button>
+      </Tooltip>
+    </div>
+  );
+}`
+      },
+      {
+        title: 'Advanced Tooltip',
+        description: 'Interactive tooltip with rich content',
+        language: 'tsx' as const,
+        category: 'advanced' as const,
+        code: `import { Tooltip } from '@/components/ui/Tooltip';
+import { Button } from '@/components/ui/Button';
+import { Info } from 'lucide-react';
+
+export function AdvancedTooltip() {
+  const richContent = (
+    <div className="space-y-2">
+      <h4 className="font-semibold">Rich Content</h4>
+      <p className="text-sm">This tooltip contains rich content with multiple elements.</p>
+      <Button size="sm">Action</Button>
+    </div>
+  );
+
+  return (
+    <Tooltip 
+      content={richContent}
+      variant="light"
+      interactive
+      side="right"
+      maxWidth={250}
+      delay={500}
+      arrow
+    >
+      <Info className="w-5 h-5 text-blue-500 cursor-help" />
+    </Tooltip>
+  );
+}`
+      }
+    ],
+    dropdown: [
+      {
+        title: 'Basic Dropdown Menu',
+        description: 'Simple dropdown with menu items',
+        language: 'tsx' as const,
+        category: 'basic' as const,
+        code: `import { Dropdown } from '@/components/ui/Dropdown';
+import { Button } from '@/components/ui/Button';
+import { ChevronDown } from 'lucide-react';
+
+export function BasicDropdown() {
+  return (
+    <Dropdown>
+      <Dropdown.Trigger asChild>
+        <Button variant="outline">
+          Options
+          <ChevronDown className="w-4 h-4 ml-2" />
+        </Button>
+      </Dropdown.Trigger>
+      
+      <Dropdown.Content>
+        <Dropdown.Item>Profile</Dropdown.Item>
+        <Dropdown.Item>Settings</Dropdown.Item>
+        <Dropdown.Separator />
+        <Dropdown.Item destructive>Sign out</Dropdown.Item>
+      </Dropdown.Content>
+    </Dropdown>
+  );
+}`
+      },
+      {
+        title: 'Advanced Dropdown with Icons',
+        description: 'Feature-rich dropdown with icons, shortcuts, and submenus',
+        language: 'tsx' as const,
+        category: 'advanced' as const,
+        code: `import { Dropdown } from '@/components/ui/Dropdown';
+import { Button } from '@/components/ui/Button';
+import { User, Settings, CreditCard, LogOut, Plus, ChevronRight } from 'lucide-react';
+
+export function AdvancedDropdown() {
+  return (
+    <Dropdown>
+      <Dropdown.Trigger asChild>
+        <Button variant="premium">
+          Account Menu
+        </Button>
+      </Dropdown.Trigger>
+      
+      <Dropdown.Content variant="modern" align="end" sideOffset={5}>
+        <Dropdown.Label>My Account</Dropdown.Label>
+        
+        <Dropdown.Item leftIcon={<User />} shortcut="⌘P">
+          Profile
+        </Dropdown.Item>
+        
+        <Dropdown.Item leftIcon={<Settings />} shortcut="⌘S">
+          Settings
+        </Dropdown.Item>
+        
+        <Dropdown.Sub>
+          <Dropdown.SubTrigger leftIcon={<Plus />}>
+            Create New
+            <ChevronRight className="w-4 h-4 ml-auto" />
+          </Dropdown.SubTrigger>
+          <Dropdown.SubContent>
+            <Dropdown.Item>Project</Dropdown.Item>
+            <Dropdown.Item>Team</Dropdown.Item>
+            <Dropdown.Item>Document</Dropdown.Item>
+          </Dropdown.SubContent>
+        </Dropdown.Sub>
+        
+        <Dropdown.Separator />
+        
+        <Dropdown.Item leftIcon={<CreditCard />}>
+          Billing
+        </Dropdown.Item>
+        
+        <Dropdown.Separator />
+        
+        <Dropdown.Item 
+          leftIcon={<LogOut />} 
+          destructive
+          shortcut="⌘Q"
+        >
+          Sign out
+        </Dropdown.Item>
+      </Dropdown.Content>
+    </Dropdown>
+  );
+}`
+      }
+    ],
+    switch: [
+      {
+        title: 'Basic Switch Controls',
+        description: 'Simple toggle switches with different variants',
+        language: 'tsx' as const,
+        category: 'basic' as const,
+        code: `import { Switch } from '@/components/ui/Switch';
+import { useState } from 'react';
+
+export function BasicSwitches() {
+  const [notifications, setNotifications] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
+
+  return (
+    <div className="space-y-4">
+      <Switch
+        checked={notifications}
+        onCheckedChange={setNotifications}
+        label="Push Notifications"
+        variant="default"
+      />
+      
+      <Switch
+        checked={darkMode}
+        onCheckedChange={setDarkMode}
+        label="Dark Mode"
+        description="Switch to dark theme"
+        variant="neon"
+      />
+      
+      <Switch
+        defaultChecked={false}
+        label="Analytics"
+        description="Help improve our service"
+        variant="gradient"
+        disabled
+      />
+    </div>
+  );
+}`
+      },
+      {
+        title: 'Advanced Switch Settings Panel',
+        description: 'Complete settings panel with grouped switches',
+        language: 'tsx' as const,
+        category: 'advanced' as const,
+        code: `import { Switch } from '@/components/ui/Switch';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { useState } from 'react';
+
+export function SettingsPanel() {
+  const [settings, setSettings] = useState({
+    notifications: true,
+    emailAlerts: false,
+    darkMode: false,
+    autoSave: true,
+    analytics: false,
+    betaFeatures: true
+  });
+
+  const updateSetting = (key: keyof typeof settings, value: boolean) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+    // Save to backend
+    console.log('Saving setting:', key, value);
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card variant="modern">
+        <CardHeader>
+          <CardTitle>Notification Preferences</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Switch
+            checked={settings.notifications}
+            onCheckedChange={(checked) => updateSetting('notifications', checked)}
+            label="Push Notifications"
+            description="Receive notifications about important updates"
+            variant="default"
+          />
+          
+          <Switch
+            checked={settings.emailAlerts}
+            onCheckedChange={(checked) => updateSetting('emailAlerts', checked)}
+            label="Email Alerts"
+            description="Get notified via email for critical events"
+            variant="modern"
+            disabled={!settings.notifications}
+          />
+        </CardContent>
+      </Card>
+      
+      <Card variant="glass">
+        <CardHeader>
+          <CardTitle>Appearance & Behavior</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Switch
+            checked={settings.darkMode}
+            onCheckedChange={(checked) => updateSetting('darkMode', checked)}
+            label="Dark Mode"
+            description="Switch to dark theme"
+            variant="neon"
+            size="lg"
+          />
+          
+          <Switch
+            checked={settings.autoSave}
+            onCheckedChange={(checked) => updateSetting('autoSave', checked)}
+            label="Auto Save"
+            description="Automatically save your work"
+            variant="gradient"
+          />
+          
+          <Switch
+            checked={settings.betaFeatures}
+            onCheckedChange={(checked) => updateSetting('betaFeatures', checked)}
+            label="Beta Features"
+            description="Enable experimental features"
+            variant="glass"
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}`
+      }
+    ]
+  };
+
+  return examples[componentId] || [];
+};
+
+const getComponentProperties = (componentId: string): ComponentProperty[] => {
+  const properties: Record<string, ComponentProperty[]> = {
+    button: [
+      {
+        name: 'variant',
+        type: '"default" | "premium" | "neon" | "glass" | "outline" | "ghost" | "destructive"',
+        required: false,
+        default: '"default"',
+        description: 'The visual style variant of the button',
+        examples: ['default', 'premium', 'neon', 'glass']
+      },
+      {
+        name: 'size',
+        type: '"sm" | "md" | "lg"',
+        required: false,
+        default: '"md"',
+        description: 'The size of the button',
+        examples: ['sm', 'md', 'lg']
+      },
+      {
+        name: 'loading',
+        type: 'boolean',
+        required: false,
+        default: 'false',
+        description: 'Show loading spinner and disable button'
+      },
+      {
+        name: 'leftIcon',
+        type: 'React.ReactNode',
+        required: false,
+        description: 'Icon to display on the left side of the button'
+      },
+      {
+        name: 'rightIcon',
+        type: 'React.ReactNode',
+        required: false,
+        description: 'Icon to display on the right side of the button'
+      },
+      {
+        name: 'disabled',
+        type: 'boolean',
+        required: false,
+        default: 'false',
+        description: 'Whether the button is disabled'
+      },
+      {
+        name: 'onClick',
+        type: '(event: React.MouseEvent) => void',
+        required: false,
+        description: 'Click event handler'
+      },
+      {
+        name: 'type',
+        type: '"button" | "submit" | "reset"',
+        required: false,
+        default: '"button"',
+        description: 'The button type',
+        examples: ['button', 'submit', 'reset']
+      }
+    ],
+    card: [
+      {
+        name: 'variant',
+        type: '"default" | "elevated" | "gradient" | "glass" | "neon" | "modern"',
+        required: false,
+        default: '"default"',
+        description: 'The visual style variant of the card',
+        examples: ['default', 'elevated', 'gradient', 'glass']
+      },
+      {
+        name: 'children',
+        type: 'React.ReactNode',
+        required: true,
+        description: 'The content of the card'
+      },
+      {
+        name: 'className',
+        type: 'string',
+        required: false,
+        description: 'Additional CSS classes'
+      },
+      {
+        name: 'padding',
+        type: '"none" | "sm" | "md" | "lg"',
+        required: false,
+        default: '"md"',
+        description: 'Internal padding of the card',
+        examples: ['none', 'sm', 'md', 'lg']
+      }
+    ],
+    input: [
+      {
+        name: 'type',
+        type: '"text" | "email" | "password" | "number" | "tel" | "url" | "search"',
+        required: false,
+        default: '"text"',
+        description: 'The input type',
+        examples: ['text', 'email', 'password', 'number']
+      },
+      {
+        name: 'value',
+        type: 'string',
+        required: false,
+        description: 'The controlled value of the input'
+      },
+      {
+        name: 'defaultValue',
+        type: 'string',
+        required: false,
+        description: 'The default value when uncontrolled'
+      },
+      {
+        name: 'placeholder',
+        type: 'string',
+        required: false,
+        description: 'Placeholder text'
+      },
+      {
+        name: 'label',
+        type: 'string',
+        required: false,
+        description: 'Label text for the input'
+      },
+      {
+        name: 'error',
+        type: 'string',
+        required: false,
+        description: 'Error message to display'
+      },
+      {
+        name: 'helperText',
+        type: 'string',
+        required: false,
+        description: 'Helper text below the input'
+      },
+      {
+        name: 'variant',
+        type: '"default" | "modern" | "minimal" | "glass"',
+        required: false,
+        default: '"default"',
+        description: 'The visual style variant',
+        examples: ['default', 'modern', 'minimal', 'glass']
+      },
+      {
+        name: 'size',
+        type: '"sm" | "md" | "lg"',
+        required: false,
+        default: '"md"',
+        description: 'The size of the input',
+        examples: ['sm', 'md', 'lg']
+      },
+      {
+        name: 'leftIcon',
+        type: 'React.ReactNode',
+        required: false,
+        description: 'Icon to display on the left side'
+      },
+      {
+        name: 'rightIcon',
+        type: 'React.ReactNode',
+        required: false,
+        description: 'Icon to display on the right side'
+      },
+      {
+        name: 'disabled',
+        type: 'boolean',
+        required: false,
+        default: 'false',
+        description: 'Whether the input is disabled'
+      },
+      {
+        name: 'required',
+        type: 'boolean',
+        required: false,
+        default: 'false',
+        description: 'Whether the input is required'
+      },
+      {
+        name: 'onChange',
+        type: '(event: React.ChangeEvent<HTMLInputElement>) => void',
+        required: false,
+        description: 'Change event handler'
+      }
+    ],
+    tooltip: [
+      {
+        name: 'content',
+        type: 'React.ReactNode',
+        required: true,
+        description: 'The content to display in the tooltip'
+      },
+      {
+        name: 'children',
+        type: 'React.ReactNode',
+        required: true,
+        description: 'The trigger element'
+      },
+      {
+        name: 'variant',
+        type: '"default" | "light" | "dark" | "neon" | "glass" | "gradient"',
+        required: false,
+        default: '"default"',
+        description: 'The visual style variant',
+        examples: ['default', 'light', 'dark', 'neon']
+      },
+      {
+        name: 'side',
+        type: '"top" | "right" | "bottom" | "left"',
+        required: false,
+        default: '"top"',
+        description: 'The preferred side of the trigger to render against',
+        examples: ['top', 'right', 'bottom', 'left']
+      },
+      {
+        name: 'align',
+        type: '"start" | "center" | "end"',
+        required: false,
+        default: '"center"',
+        description: 'The preferred alignment against the trigger',
+        examples: ['start', 'center', 'end']
+      },
+      {
+        name: 'delay',
+        type: 'number',
+        required: false,
+        default: '0',
+        description: 'Delay in milliseconds before showing the tooltip'
+      },
+      {
+        name: 'interactive',
+        type: 'boolean',
+        required: false,
+        default: 'false',
+        description: 'Whether the tooltip content is interactive'
+      },
+      {
+        name: 'arrow',
+        type: 'boolean',
+        required: false,
+        default: 'true',
+        description: 'Whether to show an arrow pointing to the trigger'
+      },
+      {
+        name: 'maxWidth',
+        type: 'number',
+        required: false,
+        default: '200',
+        description: 'Maximum width of the tooltip in pixels'
+      }
+    ],
+    dropdown: [
+      {
+        name: 'children',
+        type: 'React.ReactNode',
+        required: true,
+        description: 'Dropdown trigger and content components'
+      },
+      {
+        name: 'variant',
+        type: '"default" | "modern" | "minimal" | "neon" | "glass"',
+        required: false,
+        default: '"default"',
+        description: 'The visual style variant',
+        examples: ['default', 'modern', 'minimal', 'neon']
+      },
+      {
+        name: 'align',
+        type: '"start" | "center" | "end"',
+        required: false,
+        default: '"center"',
+        description: 'The preferred alignment against the trigger',
+        examples: ['start', 'center', 'end']
+      },
+      {
+        name: 'side',
+        type: '"top" | "right" | "bottom" | "left"',
+        required: false,
+        default: '"bottom"',
+        description: 'The preferred side of the trigger to render against',
+        examples: ['top', 'right', 'bottom', 'left']
+      },
+      {
+        name: 'sideOffset',
+        type: 'number',
+        required: false,
+        default: '4',
+        description: 'The distance in pixels from the trigger'
+      },
+      {
+        name: 'modal',
+        type: 'boolean',
+        required: false,
+        default: 'true',
+        description: 'Whether the dropdown should be modal'
+      }
+    ],
+    switch: [
+      {
+        name: 'checked',
+        type: 'boolean',
+        required: false,
+        description: 'The controlled checked state of the switch'
+      },
+      {
+        name: 'defaultChecked',
+        type: 'boolean',
+        required: false,
+        default: 'false',
+        description: 'The default checked state when uncontrolled'
+      },
+      {
+        name: 'onCheckedChange',
+        type: '(checked: boolean) => void',
+        required: false,
+        description: 'Callback when the checked state changes'
+      },
+      {
+        name: 'variant',
+        type: '"default" | "neon" | "glass" | "gradient" | "minimal" | "modern"',
+        required: false,
+        default: '"default"',
+        description: 'The visual style variant of the switch',
+        examples: ['default', 'neon', 'glass', 'gradient']
+      },
+      {
+        name: 'size',
+        type: '"sm" | "md" | "lg"',
+        required: false,
+        default: '"md"',
+        description: 'The size of the switch',
+        examples: ['sm', 'md', 'lg']
+      },
+      {
+        name: 'label',
+        type: 'string',
+        required: false,
+        description: 'Label text for the switch'
+      },
+      {
+        name: 'description',
+        type: 'string',
+        required: false,
+        description: 'Description text below the label'
+      },
+      {
+        name: 'disabled',
+        type: 'boolean',
+        required: false,
+        default: 'false',
+        description: 'Whether the switch is disabled'
+      },
+      {
+        name: 'required',
+        type: 'boolean',
+        required: false,
+        default: 'false',
+        description: 'Whether the switch is required'
+      }
+    ]
+  };
+
+  return properties[componentId] || [];
+};
+
+const getUsageExamples = (componentId: string): UsageExample[] => {
+  const examples: Record<string, UsageExample[]> = {
+    button: [
+      {
+        title: 'Form Submission',
+        description: 'Using buttons in forms with loading states',
+        scenario: 'User submits a form and needs visual feedback',
+        code: `const [isSubmitting, setIsSubmitting] = useState(false);
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+  
+  try {
+    await submitForm(formData);
+    toast.success('Form submitted successfully!');
+  } catch (error) {
+    toast.error('Failed to submit form');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+return (
+  <form onSubmit={handleSubmit}>
+    {/* Form fields */}
+    <Button 
+      type="submit" 
+      loading={isSubmitting}
+      variant="premium"
+      disabled={!isFormValid}
+    >
+      {isSubmitting ? 'Submitting...' : 'Submit'}
+    </Button>
+  </form>
+);`
+      },
+      {
+        title: 'Action Confirmation',
+        description: 'Implementing destructive actions with confirmation',
+        scenario: 'User needs to confirm dangerous operations',
+        code: `const [showConfirm, setShowConfirm] = useState(false);
+const [isDeleting, setIsDeleting] = useState(false);
+
+const handleDelete = async () => {
+  setIsDeleting(true);
+  try {
+    await deleteItem(itemId);
+    toast.success('Item deleted successfully');
+    onItemDeleted();
+  } catch (error) {
+    toast.error('Failed to delete item');
+  } finally {
+    setIsDeleting(false);
+    setShowConfirm(false);
+  }
+};
+
+return (
+  <>
+    <Button 
+      variant="destructive"
+      onClick={() => setShowConfirm(true)}
+      leftIcon={<Trash />}
+    >
+      Delete Item
+    </Button>
+    
+    {showConfirm && (
+      <Modal isOpen onClose={() => setShowConfirm(false)}>
+        <div className="space-y-4">
+          <h3>Confirm Deletion</h3>
+          <p>This action cannot be undone.</p>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowConfirm(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive"
+              loading={isDeleting}
+              onClick={handleDelete}
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    )}
+  </>
+);`
+      }
+    ],
+    card: [
+      {
+        title: 'Product Showcase',
+        description: 'Displaying products in an e-commerce layout',
+        scenario: 'E-commerce site needs attractive product cards',
+        code: `const ProductCard = ({ product }) => (
+  <Card variant="elevated" className="group hover:shadow-xl transition-shadow">
+    <div className="relative overflow-hidden">
+      <img 
+        src={product.image} 
+        alt={product.name}
+        className="w-full h-48 object-cover group-hover:scale-105 transition-transform"
+      />
+      {product.sale && (
+        <Badge 
+          variant="error" 
+          className="absolute top-2 right-2"
+        >
+          Sale
+        </Badge>
+      )}
+    </div>
+    
+    <CardContent className="p-4">
+      <h3 className="font-semibold mb-2">{product.name}</h3>
+      <p className="text-gray-600 text-sm mb-3">{product.description}</p>
+      
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-bold">\${product.price}</span>
+          {product.originalPrice && (
+            <span className="text-sm text-gray-500 line-through">
+              \${product.originalPrice}
+            </span>
+          )}
+        </div>
+        
+        <Button size="sm" variant="premium">
+          Add to Cart
+        </Button>
+      </div>
+    </CardContent>
+  </Card>
+);`
+      },
+      {
+        title: 'Dashboard Metrics',
+        description: 'Creating metric cards for dashboards',
+        scenario: 'Admin dashboard needs to display key metrics',
+        code: `const MetricCard = ({ title, value, change, trend, icon }) => (
+  <Card variant="glass">
+    <CardContent className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="p-2 bg-blue-100 rounded-lg">
+          {icon}
+        </div>
+        <Badge 
+          variant={trend === 'up' ? 'success' : 'error'}
+          size="sm"
+        >
+          {change}
+        </Badge>
+      </div>
+      
+      <h3 className="text-2xl font-bold mb-1">{value}</h3>
+      <p className="text-gray-600 text-sm">{title}</p>
+      
+      <div className="mt-4 pt-4 border-t border-gray-200">
+        <p className="text-xs text-gray-500">
+          {trend === 'up' ? '↗' : '↘'} vs last month
+        </p>
+      </div>
+    </CardContent>
+  </Card>
+);
+
+// Usage
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+  <MetricCard
+    title="Total Revenue"
+    value="$45,231"
+    change="+12.5%"
+    trend="up"
+    icon={<DollarSign className="w-5 h-5 text-blue-600" />}
+  />
+  <MetricCard
+    title="Active Users"
+    value="2,345"
+    change="+5.2%"
+    trend="up"
+    icon={<Users className="w-5 h-5 text-green-600" />}
+  />
+</div>`
+      }
+    ],
+    input: [
+      {
+        title: 'Search Interface',
+        description: 'Building a search interface with autocomplete',
+        scenario: 'Users need to search through large datasets',
+        code: `const SearchInput = () => {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  const debouncedSearch = useCallback(
+    debounce(async (searchQuery: string) => {
+      if (!searchQuery.trim()) {
+        setResults([]);
+        return;
+      }
+      
+      setIsSearching(true);
+      try {
+        const response = await searchAPI(searchQuery);
+        setResults(response.data);
+      } catch (error) {
+        console.error('Search failed:', error);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300),
+    []
+  );
+
+  useEffect(() => {
+    debouncedSearch(query);
+  }, [query, debouncedSearch]);
+
+  return (
+    <div className="relative">
+      <Input
+        type="search"
+        placeholder="Search products, users, or content..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        leftIcon={<Search className="w-4 h-4" />}
+        rightIcon={isSearching ? <Spinner className="w-4 h-4" /> : null}
+        variant="modern"
+        size="lg"
+      />
+      
+      {results.length > 0 && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-50">
+          {results.map((result) => (
+            <div 
+              key={result.id}
+              className="p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
+              onClick={() => handleResultClick(result)}
+            >
+              <div className="font-medium">{result.title}</div>
+              <div className="text-sm text-gray-600">{result.description}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};`
+      },
+      {
+        title: 'Form Validation',
+        description: 'Comprehensive form with real-time validation',
+        scenario: 'Registration form with complex validation rules',
+        code: `const RegistrationForm = () => {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    firstName: '',
+    lastName: ''
+  });
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
+  const validateField = (name: string, value: string) => {
+    switch (name) {
+      case 'email':
+        return !value ? 'Email is required' :
+               !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value) ? 'Invalid email format' : '';
+      case 'password':
+        return !value ? 'Password is required' :
+               value.length < 8 ? 'Password must be at least 8 characters' :
+               !/(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)/.test(value) ? 'Password must contain uppercase, lowercase, and number' : '';
+      case 'confirmPassword':
+        return !value ? 'Please confirm your password' :
+               value !== formData.password ? 'Passwords do not match' : '';
+      case 'firstName':
+      case 'lastName':
+        return !value ? \`\${name === 'firstName' ? 'First' : 'Last'} name is required\` : '';
+      default:
+        return '';
+    }
+  };
+
+  const handleChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    if (touched[name]) {
+      const error = validateField(name, value);
+      setErrors(prev => ({ ...prev, [name]: error }));
+    }
+  };
+
+  const handleBlur = (name: string) => {
+    setTouched(prev => ({ ...prev, [name]: true }));
+    const error = validateField(name, formData[name]);
+    setErrors(prev => ({ ...prev, [name]: error }));
+  };
+
+  return (
+    <form className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Input
+          label="First Name"
+          value={formData.firstName}
+          onChange={(e) => handleChange('firstName', e.target.value)}
+          onBlur={() => handleBlur('firstName')}
+          error={errors.firstName}
+          required
+          variant="modern"
+        />
+        
+        <Input
+          label="Last Name"
+          value={formData.lastName}
+          onChange={(e) => handleChange('lastName', e.target.value)}
+          onBlur={() => handleBlur('lastName')}
+          error={errors.lastName}
+          required
+          variant="modern"
+        />
+      </div>
+      
+      <Input
+        type="email"
+        label="Email Address"
+        value={formData.email}
+        onChange={(e) => handleChange('email', e.target.value)}
+        onBlur={() => handleBlur('email')}
+        error={errors.email}
+        leftIcon={<Mail />}
+        required
+        variant="modern"
+      />
+      
+      <Input
+        type="password"
+        label="Password"
+        value={formData.password}
+        onChange={(e) => handleChange('password', e.target.value)}
+        onBlur={() => handleBlur('password')}
+        error={errors.password}
+        helperText="Must contain at least 8 characters with uppercase, lowercase, and number"
+        showPasswordToggle
+        required
+        variant="modern"
+      />
+      
+      <Input
+        type="password"
+        label="Confirm Password"
+        value={formData.confirmPassword}
+        onChange={(e) => handleChange('confirmPassword', e.target.value)}
+        onBlur={() => handleBlur('confirmPassword')}
+        error={errors.confirmPassword}
+        required
+        variant="modern"
+      />
+      
+      <Button 
+        type="submit" 
+        variant="premium" 
+        size="lg" 
+        className="w-full"
+        disabled={Object.values(errors).some(error => error) || !Object.values(touched).length}
+      >
+        Create Account
+      </Button>
+    </form>
+  );
+};`
+      }
+    ],
+    tooltip: [
+      {
+        title: 'Help System',
+        description: 'Providing contextual help throughout the application',
+        scenario: 'Users need quick help without leaving their current context',
+        code: `const HelpTooltip = ({ children, helpText, learnMoreUrl }) => (
+  <Tooltip
+    content={
+      <div className="max-w-xs">
+        <p className="text-sm mb-2">{helpText}</p>
+        {learnMoreUrl && (
+          <a 
+            href={learnMoreUrl} 
+            className="text-blue-400 text-xs hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Learn more →
+          </a>
+        )}
+      </div>
+    }
+    variant="light"
+    interactive
+    side="top"
+    maxWidth={300}
+  >
+    {children}
+  </Tooltip>
+);
+
+// Usage throughout forms
+const FormWithHelp = () => (
+  <form className="space-y-4">
+    <div className="flex items-center gap-2">
+      <label>API Key</label>
+      <HelpTooltip 
+        helpText="Your API key is used to authenticate requests. Keep it secure and don't share it publicly."
+        learnMoreUrl="/docs/api-keys"
+      >
+        <Info className="w-4 h-4 text-gray-400 cursor-help" />
+      </HelpTooltip>
+    </div>
+    
+    <div className="flex items-center gap-2">
+      <label>Webhook URL</label>
+      <HelpTooltip 
+        helpText="We'll send POST requests to this URL when events occur. Make sure it's publicly accessible."
+        learnMoreUrl="/docs/webhooks"
+      >
+        <Info className="w-4 h-4 text-gray-400 cursor-help" />
+      </HelpTooltip>
+    </div>
+  </form>
+);`
+      },
+      {
+        title: 'Interactive Previews',
+        description: 'Showing rich previews on hover',
+        scenario: 'Users want to preview content without navigating away',
+        code: `const UserPreview = ({ user }) => (
+  <Tooltip
+    content={
+      <div className="w-64 p-4">
+        <div className="flex items-center gap-3 mb-3">
+          <img 
+            src={user.avatar} 
+            alt={user.name}
+            className="w-12 h-12 rounded-full"
+          />
+          <div>
+            <h4 className="font-semibold">{user.name}</h4>
+            <p className="text-sm text-gray-600">{user.role}</p>
+          </div>
+        </div>
+        
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span>Joined:</span>
+            <span>{formatDate(user.joinedAt)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Projects:</span>
+            <span>{user.projectCount}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Status:</span>
+            <Badge 
+              variant={user.isOnline ? 'success' : 'secondary'}
+              size="sm"
+            >
+              {user.isOnline ? 'Online' : 'Offline'}
+            </Badge>
+          </div>
+        </div>
+        
+        <div className="flex gap-2 mt-4">
+          <Button size="sm" variant="outline">
+            View Profile
+          </Button>
+          <Button size="sm" variant="premium">
+            Send Message
+          </Button>
+        </div>
+      </div>
+    }
+    variant="light"
+    interactive
+    side="right"
+    delay={500}
+  >
+    <button className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded">
+      <img 
+        src={user.avatar} 
+        alt={user.name}
+        className="w-8 h-8 rounded-full"
+      />
+      <span>{user.name}</span>
+    </button>
+  </Tooltip>
+);`
+      },
+      {
+        title: 'User Menu',
+        description: 'Creating user account menus with actions',
+        scenario: 'Users need quick access to account-related actions',
+        code: `const UserMenu = ({ user, onSignOut }) => (
+  <Dropdown>
+    <Dropdown.Trigger asChild>
+      <button className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg">
+        <img 
+          src={user.avatar} 
+          alt={user.name}
+          className="w-8 h-8 rounded-full"
+        />
+        <span className="hidden md:block">{user.name}</span>
+        <ChevronDown className="w-4 h-4" />
+      </button>
+    </Dropdown.Trigger>
+    
+    <Dropdown.Content align="end" variant="modern">
+      <Dropdown.Label>
+        <div className="flex items-center gap-2">
+          <img 
+            src={user.avatar} 
+            alt={user.name}
+            className="w-6 h-6 rounded-full"
+          />
+          <div>
+            <div className="font-medium">{user.name}</div>
+            <div className="text-xs text-gray-500">{user.email}</div>
+          </div>
+        </div>
+      </Dropdown.Label>
+      
+      <Dropdown.Separator />
+      
+      <Dropdown.Item leftIcon={<User />} onSelect={() => navigate('/profile')}>
+        Profile Settings
+      </Dropdown.Item>
+      
+      <Dropdown.Item leftIcon={<Settings />} onSelect={() => navigate('/settings')}>
+        Preferences
+      </Dropdown.Item>
+      
+      <Dropdown.Item leftIcon={<CreditCard />} onSelect={() => navigate('/billing')}>
+        Billing & Plans
+      </Dropdown.Item>
+      
+      <Dropdown.Sub>
+        <Dropdown.SubTrigger leftIcon={<Palette />}>
+          Theme
+          <ChevronRight className="w-4 h-4 ml-auto" />
+        </Dropdown.SubTrigger>
+        <Dropdown.SubContent>
+          <Dropdown.Item onSelect={() => setTheme('light')}>
+            Light
+          </Dropdown.Item>
+          <Dropdown.Item onSelect={() => setTheme('dark')}>
+            Dark
+          </Dropdown.Item>
+          <Dropdown.Item onSelect={() => setTheme('system')}>
+            System
+          </Dropdown.Item>
+        </Dropdown.SubContent>
+      </Dropdown.Sub>
+      
+      <Dropdown.Separator />
+      
+      <Dropdown.Item leftIcon={<HelpCircle />} onSelect={() => navigate('/help')}>
+        Help & Support
+      </Dropdown.Item>
+      
+      <Dropdown.Separator />
+      
+      <Dropdown.Item 
+        leftIcon={<LogOut />} 
+        destructive
+        onSelect={onSignOut}
+      >
+        Sign out
+      </Dropdown.Item>
+    </Dropdown.Content>
+  </Dropdown>
+);`
+      },
+      {
+        title: 'Context Menu',
+        description: 'Right-click context menus for enhanced UX',
+        scenario: 'Users expect right-click functionality for quick actions',
+        code: `const FileContextMenu = ({ file, onAction }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setPosition({ x: e.clientX, y: e.clientY });
+    setIsOpen(true);
+  };
+
+  return (
+    <>
+      <div 
+        onContextMenu={handleContextMenu}
+        className="p-3 hover:bg-gray-50 rounded cursor-pointer"
+      >
+        <div className="flex items-center gap-3">
+          <FileIcon type={file.type} />
+          <div>
+            <div className="font-medium">{file.name}</div>
+            <div className="text-sm text-gray-500">
+              {formatFileSize(file.size)} • {formatDate(file.modifiedAt)}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {isOpen && (
+        <Dropdown open={isOpen} onOpenChange={setIsOpen}>
+          <Dropdown.Content 
+            style={{ 
+              position: 'fixed', 
+              left: position.x, 
+              top: position.y 
+            }}
+            variant="modern"
+          >
+            <Dropdown.Item 
+              leftIcon={<Eye />}
+              onSelect={() => onAction('preview', file)}
+            >
+              Preview
+            </Dropdown.Item>
+            
+            <Dropdown.Item 
+              leftIcon={<Download />}
+              onSelect={() => onAction('download', file)}
+            >
+              Download
+            </Dropdown.Item>
+            
+            <Dropdown.Item 
+              leftIcon={<Share />}
+              onSelect={() => onAction('share', file)}
+            >
+              Share
+            </Dropdown.Item>
+            
+            <Dropdown.Separator />
+            
+            <Dropdown.Item 
+              leftIcon={<Edit />}
+              onSelect={() => onAction('rename', file)}
+            >
+              Rename
+            </Dropdown.Item>
+            
+            <Dropdown.Item 
+              leftIcon={<Copy />}
+              onSelect={() => onAction('duplicate', file)}
+            >
+              Duplicate
+            </Dropdown.Item>
+            
+            <Dropdown.Separator />
+            
+            <Dropdown.Item 
+              leftIcon={<Trash />}
+              destructive
+              onSelect={() => onAction('delete', file)}
+            >
+              Delete
+            </Dropdown.Item>
+          </Dropdown.Content>
+        </Dropdown>
+      )}
+    </>
+  );
+};`
+      },
+      {
+        title: 'Settings Panel',
+        description: 'Building preference panels with multiple toggles',
+        scenario: 'Users need to configure application settings',
+        code: `const SettingsPanel = () => {
+  const [settings, setSettings] = useState({
+    notifications: true,
+    emailAlerts: false,
+    darkMode: false,
+    autoSave: true,
+    analytics: false,
+    betaFeatures: true,
+    soundEffects: false,
+    keyboardShortcuts: true
+  });
+
+  const updateSetting = async (key: keyof typeof settings, value: boolean) => {
+    // Optimistic update
+    setSettings(prev => ({ ...prev, [key]: value }));
+    
+    try {
+      await saveUserSettings({ [key]: value });
+      toast.success('Settings saved');
+    } catch (error) {
+      // Revert on error
+      setSettings(prev => ({ ...prev, [key]: !value }));
+      toast.error('Failed to save settings');
+    }
+  };
+
+  return (
+    <div className="max-w-2xl space-y-8">
+      <Card variant="modern">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="w-5 h-5" />
+            Notifications
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <Switch
+            checked={settings.notifications}
+            onCheckedChange={(checked) => updateSetting('notifications', checked)}
+            label="Push Notifications"
+            description="Receive notifications about important updates and activities"
+            variant="default"
+          />
+          
+          <Switch
+            checked={settings.emailAlerts}
+            onCheckedChange={(checked) => updateSetting('emailAlerts', checked)}
+            label="Email Alerts"
+            description="Get notified via email for critical events and weekly summaries"
+            variant="modern"
+            disabled={!settings.notifications}
+          />
+          
+          <Switch
+            checked={settings.soundEffects}
+            onCheckedChange={(checked) => updateSetting('soundEffects', checked)}
+            label="Sound Effects"
+            description="Play sounds for notifications and interactions"
+            variant="neon"
+          />
+        </CardContent>
+      </Card>
+      
+      <Card variant="glass">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="w-5 h-5" />
+            Appearance & Behavior
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <Switch
+            checked={settings.darkMode}
+            onCheckedChange={(checked) => updateSetting('darkMode', checked)}
+            label="Dark Mode"
+            description="Switch to dark theme for better viewing in low light"
+            variant="gradient"
+            size="lg"
+          />
+          
+          <Switch
+            checked={settings.autoSave}
+            onCheckedChange={(checked) => updateSetting('autoSave', checked)}
+            label="Auto Save"
+            description="Automatically save your work every few minutes"
+            variant="glass"
+          />
+          
+          <Switch
+            checked={settings.keyboardShortcuts}
+            onCheckedChange={(checked) => updateSetting('keyboardShortcuts', checked)}
+            label="Keyboard Shortcuts"
+            description="Enable keyboard shortcuts for faster navigation"
+            variant="minimal"
+          />
+        </CardContent>
+      </Card>
+      
+      <Card variant="elevated">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="w-5 h-5" />
+            Advanced Features
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <Switch
+            checked={settings.analytics}
+            onCheckedChange={(checked) => updateSetting('analytics', checked)}
+            label="Usage Analytics"
+            description="Help improve our service by sharing anonymous usage data"
+            variant="default"
+          />
+          
+          <Switch
+            checked={settings.betaFeatures}
+            onCheckedChange={(checked) => updateSetting('betaFeatures', checked)}
+            label="Beta Features"
+            description="Get early access to experimental features and improvements"
+            variant="neon"
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+};`
+      },
+      {
+        title: 'Feature Toggles',
+        description: 'Managing feature flags and toggles',
+        scenario: 'Admin needs to control feature availability',
+        code: `const FeatureTogglePanel = () => {
+  const [features, setFeatures] = useState({
+    newDashboard: { enabled: true, rollout: 75 },
+    aiAssistant: { enabled: false, rollout: 0 },
+    advancedSearch: { enabled: true, rollout: 100 },
+    collaborativeEditing: { enabled: true, rollout: 50 },
+    mobileApp: { enabled: false, rollout: 0 }
+  });
+
+  const toggleFeature = async (featureKey: string, enabled: boolean) => {
+    try {
+      await updateFeatureFlag(featureKey, enabled);
+      setFeatures(prev => ({
+        ...prev,
+        [featureKey]: { ...prev[featureKey], enabled }
+      }));
+      
+      toast.success(\`Feature \${enabled ? 'enabled' : 'disabled'}\`);
+    } catch (error) {
+      toast.error('Failed to update feature flag');
+    }
+  };
+
+  const updateRollout = async (featureKey: string, rollout: number) => {
+    try {
+      await updateFeatureRollout(featureKey, rollout);
+      setFeatures(prev => ({
+        ...prev,
+        [featureKey]: { ...prev[featureKey], rollout }
+      }));
+    } catch (error) {
+      toast.error('Failed to update rollout percentage');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Feature Toggles</h2>
+        <Badge variant="info">Admin Panel</Badge>
+      </div>
+      
+      {Object.entries(features).map(([key, feature]) => (
+        <Card key={key} variant="modern">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-semibold capitalize">
+                  {key.replace(/([A-Z])/g, ' $1').trim()}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {getFeatureDescription(key)}
+                </p>
+              </div>
+              
+              <Switch
+                checked={feature.enabled}
+                onCheckedChange={(checked) => toggleFeature(key, checked)}
+                variant="premium"
+                size="lg"
+              />
+            </div>
+            
+            {feature.enabled && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Rollout Percentage</span>
+                  <span className="text-sm text-gray-600">{feature.rollout}%</span>
+                </div>
+                
+                <Slider
+                  value={feature.rollout}
+                  onValueChange={(value) => updateRollout(key, value)}
+                  min={0}
+                  max={100}
+                  step={5}
+                  variant="gradient"
+                />
+                
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>0% (Disabled)</span>
+                  <span>100% (All Users)</span>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+};`
+      }
+    ]
+  };
+
+  return examples[componentId] || [];
+};
+
+export const ComponentDetailView: React.FC<ComponentDetailViewProps> = ({
+  component,
+  onBack,
+  onNext,
+  onPrevious
+}) => {
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [copied, setCopied] = useState<string | null>(null);
+  const [viewportSize, setViewportSize] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const { addToast } = useToast();
+
+  const codeExamples = getComponentExamples(component.id);
+  const properties = getComponentProperties(component.id);
+  const usageExamples = getUsageExamples(component.id);
+
+  const copyCode = (code: string, title: string) => {
+    navigator.clipboard.writeText(code);
+    setCopied(title);
+    addToast({
+      type: 'success',
+      title: t('action.copied'),
+      description: `${title}のコードがクリップボードにコピーされました`,
+      duration: 2000
+    });
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  const getComplexityColor = (complexity: string) => {
+    switch (complexity) {
+      case 'basic': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'intermediate': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'advanced': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+      case 'expert': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
+  };
+
+  const getViewportClass = () => {
+    switch (viewportSize) {
+      case 'mobile': return 'max-w-sm mx-auto';
+      case 'tablet': return 'max-w-2xl mx-auto';
+      case 'desktop': return 'w-full';
+    }
+  };
+
+  // Demo component renderer
+  const renderDemo = () => {
+    switch (component.id) {
+      case 'button':
+        return (
+          <div className="space-y-6">
+            <div className="flex flex-wrap gap-4">
+              <Button variant="default">Default</Button>
+              <Button variant="premium">Premium</Button>
+              <Button variant="neon">Neon</Button>
+              <Button variant="glass">Glass</Button>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <Button loading>Loading</Button>
+              <Button leftIcon={<Heart className="w-4 h-4" />}>Like</Button>
+              <Button rightIcon={<Star className="w-4 h-4" />}>Favorite</Button>
+              <Button variant="outline" leftIcon={<Download className="w-4 h-4" />}>
+                Download
+              </Button>
+            </div>
+          </div>
+        );
+      case 'card':
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card variant="default" className="p-6">
+              <h3 className="font-semibold mb-2">Default Card</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Standard card design</p>
+            </Card>
+            <Card variant="elevated" className="p-6">
+              <h3 className="font-semibold mb-2">Elevated Card</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Enhanced shadow effect</p>
+            </Card>
+            <Card variant="gradient" className="p-6">
+              <h3 className="font-semibold mb-2">Gradient Card</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Beautiful gradient background</p>
+            </Card>
+          </div>
+        );
+      case 'tooltip':
+        return (
+          <div className="space-y-8">
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Tooltip content="Default tooltip">
+                <Button>Hover me</Button>
+              </Tooltip>
+              <Tooltip content="Neon tooltip" variant="neon">
+                <Button variant="neon">Neon style</Button>
+              </Tooltip>
+              <Tooltip content="Glass tooltip" variant="glass">
+                <Button variant="glass">Glass style</Button>
+              </Tooltip>
+              <Tooltip content="Gradient tooltip" variant="gradient">
+                <Button variant="premium">Gradient</Button>
+              </Tooltip>
+            </div>
+            <div className="flex justify-center">
+              <Tooltip 
+                content={
+                  <div className="space-y-2">
+                    <h4 className="font-semibold">Rich Content</h4>
+                    <p className="text-sm">This tooltip contains rich content.</p>
+                    <Button size="sm">Action</Button>
+                  </div>
+                }
+                variant="light"
+                interactive
+                side="top"
+                maxWidth={250}
+              >
+                <Button variant="outline">Interactive Tooltip</Button>
+              </Tooltip>
+            </div>
+          </div>
+        );
+      case 'dropdown':
+        return (
+          <div className="space-y-8">
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Dropdown>
+                <Dropdown.Trigger>
+                  Basic Menu
+                </Dropdown.Trigger>
+                <Dropdown.Content>
+                  <Dropdown.Item>Profile</Dropdown.Item>
+                  <Dropdown.Item>Settings</Dropdown.Item>
+                  <Dropdown.Separator />
+                  <Dropdown.Item destructive>Logout</Dropdown.Item>
+                </Dropdown.Content>
+              </Dropdown>
+              
+              <Dropdown>
+                <Dropdown.Trigger variant="neon">
+                  Neon Menu
+                </Dropdown.Trigger>
+                <Dropdown.Content variant="neon">
+                  <Dropdown.Label>Actions</Dropdown.Label>
+                  <Dropdown.Item>New File</Dropdown.Item>
+                  <Dropdown.Item>Edit</Dropdown.Item>
+                  <Dropdown.Separator />
+                  <Dropdown.Item destructive>Delete</Dropdown.Item>
+                </Dropdown.Content>
+              </Dropdown>
+              
+              <Dropdown>
+                <Dropdown.Trigger variant="glass">
+                  Glass Menu
+                </Dropdown.Trigger>
+                <Dropdown.Content variant="glass">
+                  <Dropdown.Item shortcut="⌘N">New</Dropdown.Item>
+                  <Dropdown.Item shortcut="⌘E">Edit</Dropdown.Item>
+                  <Dropdown.Item shortcut="⌘S">Save</Dropdown.Item>
+                </Dropdown.Content>
+              </Dropdown>
+            </div>
+          </div>
+        );
+      case 'switch':
+        return (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="font-semibold">Basic Switches</h4>
+                <Switch label="Default Switch" />
+                <Switch variant="neon" label="Neon Switch" />
+                <Switch variant="glass" label="Glass Switch" />
+                <Switch variant="gradient" label="Gradient Switch" />
+                <Switch variant="minimal" label="Minimal Switch" />
+              </div>
+              <div className="space-y-4">
+                <h4 className="font-semibold">With Descriptions</h4>
+                <Switch 
+                  label="Notifications" 
+                  description="Receive push notifications"
+                  defaultChecked
+                />
+                <Switch 
+                  variant="neon"
+                  label="Dark Mode" 
+                  description="Switch to dark theme"
+                  size="lg"
+                />
+                <Switch 
+                  variant="glass"
+                  label="Analytics" 
+                  description="Help improve our service"
+                  disabled
+                />
+              </div>
+            </div>
+          </div>
+        );
+      case 'input':
+        return (
+          <div className="space-y-8 max-w-2xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="font-semibold">Basic Inputs</h4>
+                <Input placeholder="Default input" />
+                <Input variant="neon" placeholder="Neon input" />
+                <Input variant="glass" placeholder="Glass input" />
+                <Input variant="minimal" placeholder="Minimal input" />
+              </div>
+              <div className="space-y-4">
+                <h4 className="font-semibold">With Icons & States</h4>
+                <Input 
+                  leftIcon={<Search className="w-4 h-4" />}
+                  placeholder="Search..."
+                />
+                <Input 
+                  rightIcon={<Eye className="w-4 h-4" />}
+                  type="password"
+                  placeholder="Password"
+                />
+                <Input 
+                  error="This field is required"
+                  placeholder="Error state"
+                />
+                <Input 
+                  success="Looks good!"
+                  placeholder="Success state"
+                  defaultValue="Valid input"
+                />
+              </div>
+            </div>
+            <div className="space-y-4">
+              <h4 className="font-semibold">Advanced Features</h4>
+              <Input 
+                label="Email Address"
+                description="We'll never share your email"
+                placeholder="john@example.com"
+                type="email"
+              />
+              <Input 
+                label="File Upload"
+                type="file"
+                accept="image/*"
+                multiple
+              />
+            </div>
+          </div>
+        );
+      case 'select':
+        return (
+          <div className="space-y-8 max-w-2xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="font-semibold">Basic Selects</h4>
+                <Select placeholder="Choose an option">
+                  <Select.Option value="option1">Option 1</Select.Option>
+                  <Select.Option value="option2">Option 2</Select.Option>
+                  <Select.Option value="option3">Option 3</Select.Option>
+                </Select>
+                <Select variant="neon" placeholder="Neon select">
+                  <Select.Option value="neon1">Neon Option 1</Select.Option>
+                  <Select.Option value="neon2">Neon Option 2</Select.Option>
+                </Select>
+              </div>
+              <div className="space-y-4">
+                <h4 className="font-semibold">Multi-select</h4>
+                <Select multiple placeholder="Select multiple">
+                  <Select.Option value="tag1">React</Select.Option>
+                  <Select.Option value="tag2">TypeScript</Select.Option>
+                  <Select.Option value="tag3">Tailwind</Select.Option>
+                  <Select.Option value="tag4">Framer Motion</Select.Option>
+                </Select>
+                <Select 
+                  searchable
+                  placeholder="Searchable select"
+                >
+                  <Select.Option value="country1">United States</Select.Option>
+                  <Select.Option value="country2">United Kingdom</Select.Option>
+                  <Select.Option value="country3">Canada</Select.Option>
+                  <Select.Option value="country4">Australia</Select.Option>
+                  <Select.Option value="country5">Germany</Select.Option>
+                </Select>
+              </div>
+            </div>
+          </div>
+        );
+      case 'slider':
+        return (
+          <div className="space-y-8 max-w-2xl mx-auto">
+            <div className="space-y-6">
+              <div>
+                <h4 className="font-semibold mb-4">Basic Sliders</h4>
+                <div className="space-y-4">
+                  <Slider defaultValue={[50]} max={100} step={1} />
+                  <Slider variant="neon" defaultValue={[75]} max={100} step={1} />
+                  <Slider variant="gradient" defaultValue={[25]} max={100} step={1} />
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Range Sliders</h4>
+                <div className="space-y-4">
+                  <Slider defaultValue={[20, 80]} max={100} step={1} />
+                  <Slider 
+                    variant="neon" 
+                    defaultValue={[30, 70]} 
+                    max={100} 
+                    step={5}
+                    marks={[0, 25, 50, 75, 100]}
+                  />
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">With Labels</h4>
+                <Slider 
+                  label="Volume"
+                  description="Adjust the audio volume"
+                  defaultValue={[60]}
+                  max={100}
+                  step={1}
+                  showValue
+                />
+              </div>
+            </div>
+          </div>
+        );
+      case 'datepicker':
+        return (
+          <div className="space-y-8 max-w-2xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="font-semibold">Date Pickers</h4>
+                <DatePicker placeholder="Select date" />
+                <DatePicker 
+                  variant="neon"
+                  placeholder="Neon date picker"
+                />
+                <DatePicker 
+                  range
+                  placeholder="Select date range"
+                />
+              </div>
+              <div className="space-y-4">
+                <h4 className="font-semibold">Time & DateTime</h4>
+                <DatePicker 
+                  showTime
+                  placeholder="Select date & time"
+                />
+                <DatePicker 
+                  timeOnly
+                  placeholder="Select time only"
+                />
+                <DatePicker 
+                  preset="thisWeek"
+                  placeholder="This week preset"
+                />
+              </div>
+            </div>
+          </div>
+        );
+      case 'tabs':
+        return (
+          <div className="space-y-8">
+            <div>
+              <h4 className="font-semibold mb-4">Basic Tabs</h4>
+              <Tabs defaultValue="tab1">
+                <Tabs.List>
+                  <Tabs.Trigger value="tab1">Overview</Tabs.Trigger>
+                  <Tabs.Trigger value="tab2">Analytics</Tabs.Trigger>
+                  <Tabs.Trigger value="tab3">Settings</Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="tab1" className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <h3 className="font-semibold mb-2">Overview Content</h3>
+                  <p className="text-gray-600 dark:text-gray-400">This is the overview tab content with detailed information.</p>
+                </Tabs.Content>
+                <Tabs.Content value="tab2" className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <h3 className="font-semibold mb-2">Analytics Content</h3>
+                  <p className="text-gray-600 dark:text-gray-400">Analytics and metrics are displayed here.</p>
+                </Tabs.Content>
+                <Tabs.Content value="tab3" className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <h3 className="font-semibold mb-2">Settings Content</h3>
+                  <p className="text-gray-600 dark:text-gray-400">Configure your preferences here.</p>
+                </Tabs.Content>
+              </Tabs>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Vertical Tabs</h4>
+              <Tabs defaultValue="vtab1" orientation="vertical">
+                <Tabs.List>
+                  <Tabs.Trigger value="vtab1">Profile</Tabs.Trigger>
+                  <Tabs.Trigger value="vtab2">Security</Tabs.Trigger>
+                  <Tabs.Trigger value="vtab3">Notifications</Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="vtab1" className="ml-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <h3 className="font-semibold mb-2">Profile Settings</h3>
+                  <p className="text-gray-600 dark:text-gray-400">Manage your profile information.</p>
+                </Tabs.Content>
+                <Tabs.Content value="vtab2" className="ml-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <h3 className="font-semibold mb-2">Security Settings</h3>
+                  <p className="text-gray-600 dark:text-gray-400">Configure security options.</p>
+                </Tabs.Content>
+                <Tabs.Content value="vtab3" className="ml-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <h3 className="font-semibold mb-2">Notification Settings</h3>
+                  <p className="text-gray-600 dark:text-gray-400">Manage notification preferences.</p>
+                </Tabs.Content>
+              </Tabs>
+            </div>
+          </div>
+        );
+      case 'accordion':
+        return (
+          <div className="space-y-8 max-w-2xl mx-auto">
+            <div>
+              <h4 className="font-semibold mb-4">Basic Accordion</h4>
+              <Accordion type="single" collapsible>
+                <Accordion.Item value="item1">
+                  <Accordion.Trigger>What is this component library?</Accordion.Trigger>
+                  <Accordion.Content>
+                    This is a comprehensive UI component library built with React, TypeScript, and Tailwind CSS. 
+                    It features modern design patterns and advanced animations.
+                  </Accordion.Content>
+                </Accordion.Item>
+                <Accordion.Item value="item2">
+                  <Accordion.Trigger>How do I install it?</Accordion.Trigger>
+                  <Accordion.Content>
+                    You can install the library using npm or yarn. Check our documentation for detailed installation instructions.
+                  </Accordion.Content>
+                </Accordion.Item>
+                <Accordion.Item value="item3">
+                  <Accordion.Trigger>Is it customizable?</Accordion.Trigger>
+                  <Accordion.Content>
+                    Yes! All components are highly customizable with multiple variants, themes, and styling options.
+                  </Accordion.Content>
+                </Accordion.Item>
+              </Accordion>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Multiple Open</h4>
+              <Accordion type="multiple" variant="neon">
+                <Accordion.Item value="multi1">
+                  <Accordion.Trigger>Features</Accordion.Trigger>
+                  <Accordion.Content>
+                    Advanced animations, accessibility support, TypeScript definitions, and more.
+                  </Accordion.Content>
+                </Accordion.Item>
+                <Accordion.Item value="multi2">
+                  <Accordion.Trigger>Browser Support</Accordion.Trigger>
+                  <Accordion.Content>
+                    Supports all modern browsers including Chrome, Firefox, Safari, and Edge.
+                  </Accordion.Content>
+                </Accordion.Item>
+              </Accordion>
+            </div>
+          </div>
+        );
+      case 'modal':
+        return (
+          <div className="space-y-8">
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Modal>
+                <Modal.Trigger>
+                  <Button>Basic Modal</Button>
+                </Modal.Trigger>
+                <Modal.Content>
+                  <Modal.Header>
+                    <Modal.Title>Basic Modal</Modal.Title>
+                    <Modal.Description>
+                      This is a basic modal dialog with standard styling.
+                    </Modal.Description>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Modal content goes here. You can add any content including forms, images, or other components.
+                    </p>
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Modal.Close>
+                      <Button variant="outline">Cancel</Button>
+                    </Modal.Close>
+                    <Button>Confirm</Button>
+                  </Modal.Footer>
+                </Modal.Content>
+              </Modal>
+              
+              <Modal>
+                <Modal.Trigger>
+                  <Button variant="neon">Neon Modal</Button>
+                </Modal.Trigger>
+                <Modal.Content variant="neon">
+                  <Modal.Header>
+                    <Modal.Title>Neon Modal</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <p>This modal features the neon variant styling.</p>
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Modal.Close>
+                      <Button variant="outline">Close</Button>
+                    </Modal.Close>
+                  </Modal.Footer>
+                </Modal.Content>
+              </Modal>
+              
+              <Modal>
+                <Modal.Trigger>
+                  <Button variant="glass">Glass Modal</Button>
+                </Modal.Trigger>
+                <Modal.Content variant="glass" size="lg">
+                  <Modal.Header>
+                    <Modal.Title>Large Glass Modal</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <div className="space-y-4">
+                      <p>This is a larger modal with glass effect styling.</p>
+                      <Input placeholder="Example input in modal" />
+                      <Select placeholder="Example select">
+                        <Select.Option value="1">Option 1</Select.Option>
+                        <Select.Option value="2">Option 2</Select.Option>
+                      </Select>
+                    </div>
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Modal.Close>
+                      <Button variant="outline">Cancel</Button>
+                    </Modal.Close>
+                    <Button variant="glass">Save</Button>
+                  </Modal.Footer>
+                </Modal.Content>
+              </Modal>
+            </div>
+          </div>
+        );
+      case 'datatable':
+        return (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h4 className="font-semibold">Advanced Data Table</h4>
+              <div className="flex gap-2">
+                <Button size="sm" leftIcon={<Download className="w-4 h-4" />}>Export</Button>
+                <Button size="sm" variant="outline" leftIcon={<Filter className="w-4 h-4" />}>Filter</Button>
+              </div>
+            </div>
+            <DataTable
+              data={[
+                { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin', status: 'Active', lastLogin: '2024-01-15' },
+                { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User', status: 'Active', lastLogin: '2024-01-14' },
+                { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'User', status: 'Inactive', lastLogin: '2024-01-10' },
+                { id: 4, name: 'Alice Brown', email: 'alice@example.com', role: 'Moderator', status: 'Active', lastLogin: '2024-01-16' },
+                { id: 5, name: 'Charlie Wilson', email: 'charlie@example.com', role: 'User', status: 'Pending', lastLogin: '2024-01-12' }
+              ]}
+              columns={[
+                { key: 'name', label: 'Name', sortable: true },
+                { key: 'email', label: 'Email', sortable: true },
+                { key: 'role', label: 'Role', sortable: true },
+                { key: 'status', label: 'Status', sortable: true },
+                { key: 'lastLogin', label: 'Last Login', sortable: true }
+              ]}
+              searchable
+              pagination
+              selectable
+              variant="modern"
+            />
+          </div>
+        );
+      case 'datavisualization':
+        return (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="p-6">
+                <h4 className="font-semibold mb-4">Line Chart</h4>
+                <DataVisualization
+                  type="line"
+                  data={[
+                    { name: 'Jan', value: 400, value2: 240 },
+                    { name: 'Feb', value: 300, value2: 139 },
+                    { name: 'Mar', value: 200, value2: 980 },
+                    { name: 'Apr', value: 278, value2: 390 },
+                    { name: 'May', value: 189, value2: 480 },
+                    { name: 'Jun', value: 239, value2: 380 }
+                  ]}
+                  height={200}
+                />
+              </Card>
+              <Card className="p-6">
+                <h4 className="font-semibold mb-4">Bar Chart</h4>
+                <DataVisualization
+                  type="bar"
+                  data={[
+                    { name: 'Product A', value: 400 },
+                    { name: 'Product B', value: 300 },
+                    { name: 'Product C', value: 200 },
+                    { name: 'Product D', value: 278 },
+                    { name: 'Product E', value: 189 }
+                  ]}
+                  height={200}
+                />
+              </Card>
+              <Card className="p-6">
+                <h4 className="font-semibold mb-4">Pie Chart</h4>
+                <DataVisualization
+                  type="pie"
+                  data={[
+                    { name: 'Desktop', value: 400 },
+                    { name: 'Mobile', value: 300 },
+                    { name: 'Tablet', value: 200 }
+                  ]}
+                  height={200}
+                />
+              </Card>
+              <Card className="p-6">
+                <h4 className="font-semibold mb-4">Area Chart</h4>
+                <DataVisualization
+                  type="area"
+                  data={[
+                    { name: 'Jan', value: 400 },
+                    { name: 'Feb', value: 300 },
+                    { name: 'Mar', value: 200 },
+                    { name: 'Apr', value: 278 },
+                    { name: 'May', value: 189 },
+                    { name: 'Jun', value: 239 }
+                  ]}
+                  height={200}
+                />
+              </Card>
+            </div>
+          </div>
+        );
+      case 'advanceddataviz':
+        return (
+          <div className="space-y-8">
+            <div className="text-center mb-6">
+              <Badge variant="premium" className="mb-2">Premium Component</Badge>
+              <h4 className="font-semibold">Advanced Data Visualization</h4>
+              <p className="text-gray-600 dark:text-gray-400">Interactive 3D charts and real-time data visualization</p>
+            </div>
+            <AdvancedDataViz
+              type="3d-scatter"
+              data={Array.from({ length: 50 }, (_, i) => ({
+                x: Math.random() * 100,
+                y: Math.random() * 100,
+                z: Math.random() * 100,
+                category: ['A', 'B', 'C'][Math.floor(Math.random() * 3)]
+              }))}
+              interactive
+              realTime
+              height={400}
+            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <AdvancedDataViz
+                type="heatmap"
+                data={Array.from({ length: 10 }, (_, i) => 
+                  Array.from({ length: 10 }, (_, j) => ({
+                    x: i,
+                    y: j,
+                    value: Math.random() * 100
+                  }))
+                ).flat()}
+                height={250}
+              />
+              <AdvancedDataViz
+                type="network"
+                data={{
+                  nodes: [
+                    { id: 'A', group: 1 },
+                    { id: 'B', group: 1 },
+                    { id: 'C', group: 2 },
+                    { id: 'D', group: 2 },
+                    { id: 'E', group: 3 }
+                  ],
+                  links: [
+                    { source: 'A', target: 'B' },
+                    { source: 'B', target: 'C' },
+                    { source: 'C', target: 'D' },
+                    { source: 'D', target: 'E' }
+                  ]
+                }}
+                height={250}
+              />
+            </div>
+          </div>
+        );
+      case 'avatar':
+        return (
+          <div className="space-y-8">
+            <div className="space-y-6">
+              <div>
+                <h4 className="font-semibold mb-4">Basic Avatars</h4>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <Avatar size="sm" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150" />
+                  <Avatar size="md" src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150" />
+                  <Avatar size="lg" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" />
+                  <Avatar size="xl" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150" />
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Initials & Placeholders</h4>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <Avatar initials="JD" />
+                  <Avatar initials="AS" variant="neon" />
+                  <Avatar initials="BJ" variant="gradient" />
+                  <Avatar placeholder />
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">With Status Indicators</h4>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <Avatar 
+                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150"
+                    status="online"
+                  />
+                  <Avatar 
+                    src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150"
+                    status="away"
+                  />
+                  <Avatar 
+                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+                    status="busy"
+                  />
+                  <Avatar 
+                    src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150"
+                    status="offline"
+                  />
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Avatar Groups</h4>
+                <Avatar.Group max={3}>
+                  <Avatar src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150" />
+                  <Avatar src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150" />
+                  <Avatar src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" />
+                  <Avatar src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150" />
+                  <Avatar initials="JD" />
+                </Avatar.Group>
+              </div>
+            </div>
+          </div>
+        );
+      case 'badge':
+        return (
+          <div className="space-y-8">
+            <div className="space-y-6">
+              <div>
+                <h4 className="font-semibold mb-4">Basic Badges</h4>
+                <div className="flex flex-wrap gap-2">
+                  <Badge>Default</Badge>
+                  <Badge variant="success">Success</Badge>
+                  <Badge variant="warning">Warning</Badge>
+                  <Badge variant="error">Error</Badge>
+                  <Badge variant="info">Info</Badge>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Sizes</h4>
+                <div className="flex flex-wrap gap-2 items-center">
+                  <Badge size="sm">Small</Badge>
+                  <Badge size="md">Medium</Badge>
+                  <Badge size="lg">Large</Badge>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Special Variants</h4>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="neon">Neon</Badge>
+                  <Badge variant="gradient">Gradient</Badge>
+                  <Badge variant="glass">Glass</Badge>
+                  <Badge variant="premium">Premium</Badge>
+                  <Badge variant="outline">Outline</Badge>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">With Icons</h4>
+                <div className="flex flex-wrap gap-2">
+                  <Badge leftIcon={<Star className="w-3 h-3" />}>Featured</Badge>
+                  <Badge rightIcon={<Zap className="w-3 h-3" />} variant="warning">New</Badge>
+                  <Badge leftIcon={<Heart className="w-3 h-3" />} variant="error">Favorite</Badge>
+                  <Badge rightIcon={<Download className="w-3 h-3" />} variant="info">Download</Badge>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Interactive Badges</h4>
+                <div className="flex flex-wrap gap-2">
+                  <Badge 
+                    interactive 
+                    rightIcon={<X className="w-3 h-3" />}
+                    onRemove={() => console.log('Removed')}
+                  >
+                    Removable
+                  </Badge>
+                  <Badge 
+                    interactive
+                    onClick={() => console.log('Clicked')}
+                  >
+                    Clickable
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      case 'toast':
+        return (
+          <div className="space-y-8">
+            <div className="text-center">
+              <h4 className="font-semibold mb-4">Toast Notifications</h4>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">Click buttons to trigger toast notifications</p>
+              <div className="flex flex-wrap gap-4 justify-center">
+                <Button onClick={() => addToast({ title: 'Success!', description: 'Operation completed successfully', type: 'success' })}>
+                  Success Toast
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => addToast({ title: 'Warning', description: 'Please check your input', type: 'warning' })}
+                >
+                  Warning Toast
+                </Button>
+                <Button 
+                  variant="destructive"
+                  onClick={() => addToast({ title: 'Error', description: 'Something went wrong', type: 'error' })}
+                >
+                  Error Toast
+                </Button>
+                <Button 
+                  variant="neon"
+                  onClick={() => addToast({ 
+                    title: 'Premium Feature', 
+                    description: 'This is a premium toast notification',
+                    type: 'info',
+                    duration: 5000
+                  })}
+                >
+                  Neon Toast
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      case 'notification':
+        return (
+          <div className="space-y-8">
+            <div className="space-y-6">
+              <div>
+                <h4 className="font-semibold mb-4">Notification Types</h4>
+                <div className="space-y-4">
+                  <Notification
+                    type="info"
+                    title="Information"
+                    description="This is an informational notification with helpful details."
+                    icon={<Info className="w-5 h-5" />}
+                  />
+                  <Notification
+                    type="success"
+                    title="Success"
+                    description="Your action was completed successfully!"
+                    icon={<CheckCircle className="w-5 h-5" />}
+                  />
+                  <Notification
+                    type="warning"
+                    title="Warning"
+                    description="Please review your settings before proceeding."
+                    icon={<AlertTriangle className="w-5 h-5" />}
+                  />
+                  <Notification
+                    type="error"
+                    title="Error"
+                    description="An error occurred while processing your request."
+                    icon={<AlertCircle className="w-5 h-5" />}
+                  />
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Interactive Notifications</h4>
+                <div className="space-y-4">
+                  <Notification
+                    type="info"
+                    title="Update Available"
+                    description="A new version of the application is available."
+                    actions={[
+                      { label: 'Update Now', onClick: () => console.log('Update clicked'), variant: 'primary' },
+                      { label: 'Later', onClick: () => console.log('Later clicked'), variant: 'ghost' }
+                    ]}
+                    dismissible
+                  />
+                  <Notification
+                    type="success"
+                    title="Welcome!"
+                    description="Thanks for joining our platform. Here's what you can do next."
+                    actions={[
+                      { label: 'Get Started', onClick: () => console.log('Get started'), variant: 'primary' },
+                      { label: 'Learn More', onClick: () => console.log('Learn more'), variant: 'outline' }
+                    ]}
+                    variant="neon"
+                    dismissible
+                  />
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Compact Notifications</h4>
+                <div className="space-y-2">
+                  <Notification
+                    type="info"
+                    title="New message received"
+                    compact
+                    dismissible
+                  />
+                  <Notification
+                    type="success"
+                    title="File uploaded successfully"
+                    compact
+                    dismissible
+                  />
+                  <Notification
+                    type="warning"
+                    title="Storage almost full"
+                    compact
+                    dismissible
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      case 'progress':
+        return (
+          <div className="space-y-8 max-w-2xl mx-auto">
+            <div className="space-y-6">
+              <div>
+                <h4 className="font-semibold mb-4">Linear Progress</h4>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Default Progress</label>
+                    <Progress value={65} />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Neon Progress</label>
+                    <Progress value={45} variant="neon" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Gradient Progress</label>
+                    <Progress value={80} variant="gradient" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">With Label</label>
+                    <Progress value={75} showLabel />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Circular Progress</h4>
+                <div className="flex flex-wrap gap-6 justify-center">
+                  <Progress type="circular" value={25} size="sm" />
+                  <Progress type="circular" value={50} size="md" />
+                  <Progress type="circular" value={75} size="lg" showLabel />
+                  <Progress type="circular" value={90} size="xl" variant="neon" showLabel />
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Animated Progress</h4>
+                <div className="space-y-4">
+                  <Progress value={60} animated />
+                  <Progress value={40} variant="gradient" animated striped />
+                  <Progress type="circular" value={85} animated showLabel />
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Multi-step Progress</h4>
+                <Progress
+                  type="steps"
+                  steps={[
+                    { label: 'Account', completed: true },
+                    { label: 'Profile', completed: true },
+                    { label: 'Preferences', active: true },
+                    { label: 'Review', completed: false }
+                  ]}
+                />
+              </div>
+            </div>
+          </div>
+        );
+      case 'popover':
+        return (
+          <div className="space-y-8">
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Popover>
+                <Popover.Trigger>
+                  <Button>Basic Popover</Button>
+                </Popover.Trigger>
+                <Popover.Content>
+                  <div className="p-4">
+                    <h4 className="font-semibold mb-2">Popover Title</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      This is a basic popover with some content.
+                    </p>
+                  </div>
+                </Popover.Content>
+              </Popover>
+              
+              <Popover>
+                <Popover.Trigger>
+                  <Button variant="neon">Neon Popover</Button>
+                </Popover.Trigger>
+                <Popover.Content variant="neon" side="top">
+                  <div className="p-4">
+                    <h4 className="font-semibold mb-2">Neon Style</h4>
+                    <p className="text-sm">Popover with neon styling positioned on top.</p>
+                  </div>
+                </Popover.Content>
+              </Popover>
+              
+              <Popover>
+                <Popover.Trigger>
+                  <Button variant="glass">Interactive Popover</Button>
+                </Popover.Trigger>
+                <Popover.Content variant="glass" interactive>
+                  <div className="p-4 space-y-3">
+                    <h4 className="font-semibold">Interactive Content</h4>
+                    <Input placeholder="Type something..." size="sm" />
+                    <div className="flex gap-2">
+                      <Button size="sm">Save</Button>
+                      <Button size="sm" variant="outline">Cancel</Button>
+                    </div>
+                  </div>
+                </Popover.Content>
+              </Popover>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="p-6">
+                <h5 className="font-semibold mb-4">Rich Content Popover</h5>
+                <Popover>
+                  <Popover.Trigger>
+                    <Button variant="outline" className="w-full">User Profile</Button>
+                  </Popover.Trigger>
+                  <Popover.Content side="right" align="start">
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150" size="md" />
+                        <div>
+                          <h4 className="font-semibold">John Doe</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">john@example.com</p>
+                        </div>
+                      </div>
+                      <div className="border-t pt-3">
+                        <Button size="sm" variant="outline" className="w-full">View Profile</Button>
+                      </div>
+                    </div>
+                  </Popover.Content>
+                </Popover>
+              </Card>
+              
+              <Card className="p-6">
+                <h5 className="font-semibold mb-4">Form Popover</h5>
+                <Popover>
+                  <Popover.Trigger>
+                    <Button variant="outline" className="w-full">Quick Settings</Button>
+                  </Popover.Trigger>
+                  <Popover.Content>
+                    <div className="p-4 space-y-4">
+                      <h4 className="font-semibold">Quick Settings</h4>
+                      <div className="space-y-3">
+                        <Switch label="Dark Mode" />
+                        <Switch label="Notifications" defaultChecked />
+                      </div>
+                      <Button size="sm" className="w-full">Save Changes</Button>
+                    </div>
+                  </Popover.Content>
+                </Popover>
+              </Card>
+            </div>
+          </div>
+        );
+      case 'carousel':
+        return (
+          <div className="space-y-8">
+            <div>
+              <h4 className="font-semibold mb-4">Image Carousel</h4>
+              <Carousel
+                images={[
+                  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+                  'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800',
+                  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800',
+                  'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=800'
+                ]}
+                autoPlay
+                showThumbnails
+                height={300}
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-semibold mb-4">Content Carousel</h4>
+                <Carousel variant="content">
+                  <Carousel.Item>
+                    <Card className="p-6 h-full">
+                      <h3 className="font-semibold mb-2">Feature 1</h3>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Advanced animations and smooth transitions for better user experience.
+                      </p>
+                    </Card>
+                  </Carousel.Item>
+                  <Carousel.Item>
+                    <Card className="p-6 h-full">
+                      <h3 className="font-semibold mb-2">Feature 2</h3>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Responsive design that works perfectly on all devices.
+                      </p>
+                    </Card>
+                  </Carousel.Item>
+                  <Carousel.Item>
+                    <Card className="p-6 h-full">
+                      <h3 className="font-semibold mb-2">Feature 3</h3>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Customizable themes and styling options for every need.
+                      </p>
+                    </Card>
+                  </Carousel.Item>
+                </Carousel>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold mb-4">Vertical Carousel</h4>
+                <Carousel orientation="vertical" height={250}>
+                  <Carousel.Item>
+                    <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-6 rounded-lg text-white">
+                      <h3 className="font-semibold">Slide 1</h3>
+                      <p>Vertical carousel content</p>
+                    </div>
+                  </Carousel.Item>
+                  <Carousel.Item>
+                    <div className="bg-gradient-to-r from-green-500 to-teal-500 p-6 rounded-lg text-white">
+                      <h3 className="font-semibold">Slide 2</h3>
+                      <p>Another vertical slide</p>
+                    </div>
+                  </Carousel.Item>
+                  <Carousel.Item>
+                    <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6 rounded-lg text-white">
+                      <h3 className="font-semibold">Slide 3</h3>
+                      <p>Third vertical slide</p>
+                    </div>
+                  </Carousel.Item>
+                </Carousel>
+              </div>
+            </div>
+          </div>
+        );
+      case 'commandpalette':
+        return (
+          <div className="space-y-8">
+            <div className="text-center">
+              <h4 className="font-semibold mb-4">Command Palette</h4>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Press <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm">⌘K</kbd> or click the button to open
+              </p>
+              <CommandPalette>
+                <CommandPalette.Trigger>
+                  <Button leftIcon={<Search className="w-4 h-4" />}>
+                    Open Command Palette
+                  </Button>
+                </CommandPalette.Trigger>
+                <CommandPalette.Content>
+                  <CommandPalette.Input placeholder="Type a command or search..." />
+                  <CommandPalette.List>
+                    <CommandPalette.Group heading="Navigation">
+                      <CommandPalette.Item onSelect={() => console.log('Home')}>
+                        <Home className="w-4 h-4 mr-2" />
+                        Go to Home
+                      </CommandPalette.Item>
+                      <CommandPalette.Item onSelect={() => console.log('Components')}>
+                        <Grid3X3 className="w-4 h-4 mr-2" />
+                        Browse Components
+                      </CommandPalette.Item>
+                      <CommandPalette.Item onSelect={() => console.log('Documentation')}>
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        View Documentation
+                      </CommandPalette.Item>
+                    </CommandPalette.Group>
+                    <CommandPalette.Group heading="Actions">
+                      <CommandPalette.Item onSelect={() => console.log('New Project')}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create New Project
+                      </CommandPalette.Item>
+                      <CommandPalette.Item onSelect={() => console.log('Export')}>
+                        <Download className="w-4 h-4 mr-2" />
+                        Export Components
+                      </CommandPalette.Item>
+                      <CommandPalette.Item onSelect={() => console.log('Settings')}>
+                        <Settings className="w-4 h-4 mr-2" />
+                        Open Settings
+                      </CommandPalette.Item>
+                    </CommandPalette.Group>
+                    <CommandPalette.Group heading="Recent">
+                      <CommandPalette.Item onSelect={() => console.log('Button')}>
+                        <Target className="w-4 h-4 mr-2" />
+                        Button Component
+                      </CommandPalette.Item>
+                      <CommandPalette.Item onSelect={() => console.log('Card')}>
+                        <Layers className="w-4 h-4 mr-2" />
+                        Card Component
+                      </CommandPalette.Item>
+                    </CommandPalette.Group>
+                  </CommandPalette.List>
+                </CommandPalette.Content>
+              </CommandPalette>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="p-6">
+                <h5 className="font-semibold mb-3">Features</h5>
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <li>• Fuzzy search with instant results</li>
+                  <li>• Keyboard navigation support</li>
+                  <li>• Grouped commands organization</li>
+                  <li>• Recent items tracking</li>
+                  <li>• Custom command actions</li>
+                </ul>
+              </Card>
+              
+              <Card className="p-6">
+                <h5 className="font-semibold mb-3">Keyboard Shortcuts</h5>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Open palette</span>
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">⌘K</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Navigate</span>
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">↑↓</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Select</span>
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">Enter</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Close</span>
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">Esc</kbd>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        );
+      case 'filemanager':
+        return (
+          <div className="space-y-8">
+            <div className="text-center mb-6">
+              <Badge variant="premium" className="mb-2">Premium Component</Badge>
+              <h4 className="font-semibold">File Manager</h4>
+              <p className="text-gray-600 dark:text-gray-400">Complete file management with drag & drop support</p>
+            </div>
+            <FileManager
+              allowUpload
+              allowDelete
+              allowRename
+              allowCreateFolder
+              viewMode="grid"
+              maxFileSize={10 * 1024 * 1024}
+              acceptedFileTypes={['image/*', '.pdf', '.doc', '.docx']}
+              onFileSelect={(file) => console.log('Selected:', file)}
+              onFileUpload={(files) => console.log('Uploaded:', files)}
+              onFileDelete={(file) => console.log('Deleted:', file)}
+              initialFiles={[
+                {
+                  id: '1',
+                  name: 'Project Proposal.pdf',
+                  type: 'application/pdf',
+                  size: 2048576,
+                  lastModified: new Date('2024-01-15'),
+                  thumbnail: '/icons/pdf.svg'
+                },
+                {
+                  id: '2',
+                  name: 'Design Assets',
+                  type: 'folder',
+                  size: 0,
+                  lastModified: new Date('2024-01-14'),
+                  children: [
+                    {
+                      id: '3',
+                      name: 'logo.png',
+                      type: 'image/png',
+                      size: 512000,
+                      lastModified: new Date('2024-01-14'),
+                      thumbnail: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=150'
+                    }
+                  ]
+                },
+                {
+                  id: '4',
+                  name: 'presentation.pptx',
+                  type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                  size: 4096000,
+                  lastModified: new Date('2024-01-13'),
+                  thumbnail: '/icons/pptx.svg'
+                }
+              ]}
+            />
+          </div>
+        );
+      case 'kanbanboard':
+        return (
+          <div className="space-y-8">
+            <div className="text-center mb-6">
+              <Badge variant="premium" className="mb-2">Premium Component</Badge>
+              <h4 className="font-semibold">Kanban Board</h4>
+              <p className="text-gray-600 dark:text-gray-400">Drag & drop project management board</p>
+            </div>
+            <KanbanBoard
+              columns={[
+                {
+                  id: 'todo',
+                  title: 'To Do',
+                  color: 'gray',
+                  cards: [
+                    {
+                      id: '1',
+                      title: 'Design new landing page',
+                      description: 'Create wireframes and mockups for the new landing page',
+                      assignee: { name: 'John Doe', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150' },
+                      priority: 'high',
+                      tags: ['design', 'ui/ux'],
+                      dueDate: new Date('2024-02-01')
+                    },
+                    {
+                      id: '2',
+                      title: 'Update documentation',
+                      description: 'Review and update API documentation',
+                      assignee: { name: 'Jane Smith', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150' },
+                      priority: 'medium',
+                      tags: ['documentation'],
+                      dueDate: new Date('2024-01-25')
+                    }
+                  ]
+                },
+                {
+                  id: 'inprogress',
+                  title: 'In Progress',
+                  color: 'blue',
+                  cards: [
+                    {
+                      id: '3',
+                      title: 'Implement user authentication',
+                      description: 'Add login and registration functionality',
+                      assignee: { name: 'Bob Johnson', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150' },
+                      priority: 'high',
+                      tags: ['backend', 'security'],
+                      dueDate: new Date('2024-01-30')
+                    }
+                  ]
+                },
+                {
+                  id: 'review',
+                  title: 'Review',
+                  color: 'orange',
+                  cards: [
+                    {
+                      id: '4',
+                      title: 'Code review for payment system',
+                      description: 'Review implementation of payment processing',
+                      assignee: { name: 'Alice Brown', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150' },
+                      priority: 'high',
+                      tags: ['review', 'payment'],
+                      dueDate: new Date('2024-01-22')
+                    }
+                  ]
+                },
+                {
+                  id: 'done',
+                  title: 'Done',
+                  color: 'green',
+                  cards: [
+                    {
+                      id: '5',
+                      title: 'Setup CI/CD pipeline',
+                      description: 'Configure automated testing and deployment',
+                      assignee: { name: 'Charlie Wilson', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150' },
+                      priority: 'medium',
+                      tags: ['devops', 'automation'],
+                      completedDate: new Date('2024-01-18')
+                    }
+                  ]
+                }
+              ]}
+              onCardMove={(cardId, fromColumn, toColumn) => console.log('Moved card:', cardId, 'from', fromColumn, 'to', toColumn)}
+              onCardEdit={(card) => console.log('Edit card:', card)}
+              onCardDelete={(cardId) => console.log('Delete card:', cardId)}
+              allowAddCard
+              allowEditCard
+              allowDeleteCard
+            />
+          </div>
+        );
+      case 'richtexteditor':
+        return (
+          <div className="space-y-8">
+            <div className="text-center mb-6">
+              <Badge variant="premium" className="mb-2">Premium Component</Badge>
+              <h4 className="font-semibold">Rich Text Editor</h4>
+              <p className="text-gray-600 dark:text-gray-400">WYSIWYG editor with advanced formatting</p>
+            </div>
+            <div className="max-w-4xl mx-auto">
+              <RichTextEditor
+                placeholder="Start writing your content..."
+                features={[
+                  'bold', 'italic', 'underline', 'strikethrough',
+                  'heading1', 'heading2', 'heading3',
+                  'bulletList', 'orderedList', 'blockquote',
+                  'link', 'image', 'table',
+                  'codeBlock', 'horizontalRule',
+                  'undo', 'redo'
+                ]}
+                variant="modern"
+                height={400}
+                onChange={(content) => console.log('Content changed:', content)}
+                defaultContent={`
+                  <h1>Welcome to the Rich Text Editor</h1>
+                  <p>This is a powerful WYSIWYG editor with many features:</p>
+                  <ul>
+                    <li><strong>Bold</strong> and <em>italic</em> text formatting</li>
+                    <li>Multiple heading levels</li>
+                    <li>Lists and blockquotes</li>
+                    <li>Links and images</li>
+                    <li>Tables and code blocks</li>
+                  </ul>
+                  <blockquote>
+                    <p>The editor supports rich content and maintains clean HTML output.</p>
+                  </blockquote>
+                  <p>Try editing this content to see the editor in action!</p>
+                `}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="p-6">
+                <h5 className="font-semibold mb-3">Features</h5>
+                <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                  <li>• Rich text formatting</li>
+                  <li>• Image upload and embedding</li>
+                  <li>• Table creation and editing</li>
+                  <li>• Code syntax highlighting</li>
+                  <li>• Collaborative editing support</li>
+                  <li>• Export to multiple formats</li>
+                </ul>
+              </Card>
+              <Card className="p-6">
+                <h5 className="font-semibold mb-3">Keyboard Shortcuts</h5>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>Bold</span>
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">⌘B</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Italic</span>
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">⌘I</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Link</span>
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">⌘K</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Undo</span>
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">⌘Z</kbd>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        );
+      case 'smartform':
+        return (
+          <div className="space-y-8">
+            <div className="text-center mb-6">
+              <Badge variant="premium" className="mb-2">Premium Component</Badge>
+              <h4 className="font-semibold">Smart Form</h4>
+              <p className="text-gray-600 dark:text-gray-400">Intelligent form with dynamic validation and AI assistance</p>
+            </div>
+            <div className="max-w-2xl mx-auto">
+              <SmartForm
+                schema={{
+                  fields: [
+                    {
+                      name: 'firstName',
+                      type: 'text',
+                      label: 'First Name',
+                      required: true,
+                      validation: { minLength: 2 },
+                      aiSuggestions: true
+                    },
+                    {
+                      name: 'lastName',
+                      type: 'text',
+                      label: 'Last Name',
+                      required: true,
+                      validation: { minLength: 2 }
+                    },
+                    {
+                      name: 'email',
+                      type: 'email',
+                      label: 'Email Address',
+                      required: true,
+                      validation: { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
+                      aiValidation: true
+                    },
+                    {
+                      name: 'phone',
+                      type: 'tel',
+                      label: 'Phone Number',
+                      mask: '(999) 999-9999',
+                      validation: { pattern: /^\(\d{3}\) \d{3}-\d{4}$/ }
+                    },
+                    {
+                      name: 'company',
+                      type: 'text',
+                      label: 'Company',
+                      autocomplete: true,
+                      suggestions: ['Google', 'Microsoft', 'Apple', 'Amazon', 'Meta']
+                    },
+                    {
+                      name: 'role',
+                      type: 'select',
+                      label: 'Role',
+                      options: [
+                        { value: 'developer', label: 'Developer' },
+                        { value: 'designer', label: 'Designer' },
+                        { value: 'manager', label: 'Manager' },
+                        { value: 'other', label: 'Other' }
+                      ],
+                      conditional: { field: 'company', operator: 'isNotEmpty' }
+                    },
+                    {
+                      name: 'experience',
+                      type: 'slider',
+                      label: 'Years of Experience',
+                      min: 0,
+                      max: 20,
+                      step: 1,
+                      conditional: { field: 'role', operator: 'equals', value: 'developer' }
+                    },
+                    {
+                      name: 'skills',
+                      type: 'multiselect',
+                      label: 'Skills',
+                      options: [
+                        { value: 'react', label: 'React' },
+                        { value: 'typescript', label: 'TypeScript' },
+                        { value: 'nodejs', label: 'Node.js' },
+                        { value: 'python', label: 'Python' },
+                        { value: 'design', label: 'UI/UX Design' }
+                      ],
+                      conditional: { field: 'role', operator: 'in', value: ['developer', 'designer'] }
+                    },
+                    {
+                      name: 'bio',
+                      type: 'textarea',
+                      label: 'Bio',
+                      placeholder: 'Tell us about yourself...',
+                      maxLength: 500,
+                      aiAssist: true
+                    },
+                    {
+                      name: 'newsletter',
+                      type: 'checkbox',
+                      label: 'Subscribe to newsletter',
+                      description: 'Get updates about new features and releases'
+                    }
+                  ]
+                }}
+                onSubmit={(data) => console.log('Form submitted:', data)}
+                onValidate={(field, value) => console.log('Validating:', field, value)}
+                aiEnabled
+                autoSave
+                progressIndicator
+                variant="modern"
+              />
+            </div>
+          </div>
+        );
+      case 'timeline':
+        return (
+          <div className="space-y-8">
+            <div>
+              <h4 className="font-semibold mb-4">Project Timeline</h4>
+              <Timeline
+                items={[
+                  {
+                    id: '1',
+                    title: 'Project Kickoff',
+                    description: 'Initial planning and team setup',
+                    date: new Date('2024-01-01'),
+                    type: 'milestone',
+                    status: 'completed',
+                    icon: <Rocket className="w-4 h-4" />,
+                    color: 'green'
+                  },
+                  {
+                    id: '2',
+                    title: 'Design Phase',
+                    description: 'UI/UX design and prototyping',
+                    date: new Date('2024-01-15'),
+                    type: 'phase',
+                    status: 'completed',
+                    icon: <Palette className="w-4 h-4" />,
+                    color: 'blue',
+                    duration: 14
+                  },
+                  {
+                    id: '3',
+                    title: 'Development Sprint 1',
+                    description: 'Core functionality implementation',
+                    date: new Date('2024-02-01'),
+                    type: 'sprint',
+                    status: 'in-progress',
+                    icon: <Code className="w-4 h-4" />,
+                    color: 'orange',
+                    progress: 65
+                  },
+                  {
+                    id: '4',
+                    title: 'Testing & QA',
+                    description: 'Quality assurance and bug fixes',
+                    date: new Date('2024-02-15'),
+                    type: 'phase',
+                    status: 'pending',
+                    icon: <TestTube className="w-4 h-4" />,
+                    color: 'purple'
+                  },
+                  {
+                    id: '5',
+                    title: 'Launch',
+                    description: 'Production deployment and go-live',
+                    date: new Date('2024-03-01'),
+                    type: 'milestone',
+                    status: 'pending',
+                    icon: <Rocket className="w-4 h-4" />,
+                    color: 'red'
+                  }
+                ]}
+                variant="modern"
+                showProgress
+                interactive
+                onItemClick={(item) => console.log('Timeline item clicked:', item)}
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-semibold mb-4">Horizontal Timeline</h4>
+                <Timeline
+                  orientation="horizontal"
+                  items={[
+                    {
+                      id: '1',
+                      title: 'Planning',
+                      date: new Date('2024-01-01'),
+                      status: 'completed',
+                      color: 'green'
+                    },
+                    {
+                      id: '2',
+                      title: 'Design',
+                      date: new Date('2024-01-15'),
+                      status: 'completed',
+                      color: 'blue'
+                    },
+                    {
+                      id: '3',
+                      title: 'Development',
+                      date: new Date('2024-02-01'),
+                      status: 'in-progress',
+                      color: 'orange'
+                    },
+                    {
+                      id: '4',
+                      title: 'Launch',
+                      date: new Date('2024-03-01'),
+                      status: 'pending',
+                      color: 'gray'
+                    }
+                  ]}
+                  compact
+                />
+              </div>
+              
+              <div>
+                <h4 className="font-semibold mb-4">Event Timeline</h4>
+                <Timeline
+                  items={[
+                    {
+                      id: '1',
+                      title: 'User Registration',
+                      description: 'New user signed up',
+                      date: new Date('2024-01-20T10:30:00'),
+                      type: 'event',
+                      status: 'completed',
+                      icon: <User className="w-4 h-4" />,
+                      color: 'blue'
+                    },
+                    {
+                      id: '2',
+                      title: 'First Purchase',
+                      description: 'Completed first transaction',
+                      date: new Date('2024-01-20T14:15:00'),
+                      type: 'event',
+                      status: 'completed',
+                      icon: <ShoppingCart className="w-4 h-4" />,
+                      color: 'green'
+                    },
+                    {
+                      id: '3',
+                      title: 'Support Ticket',
+                      description: 'Submitted help request',
+                      date: new Date('2024-01-21T09:00:00'),
+                      type: 'event',
+                      status: 'completed',
+                      icon: <MessageSquare className="w-4 h-4" />,
+                      color: 'orange'
+                    }
+                  ]}
+                  variant="minimal"
+                  showTime
+                />
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        return (
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <Eye className="w-16 h-16 mx-auto" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
+              Demo Coming Soon
+            </h3>
+            <p className="text-gray-500 dark:text-gray-500">
+              Interactive demo for this component is being prepared
+            </p>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="w-full max-w-7xl mx-auto p-6">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              leftIcon={<ChevronLeft className="w-4 h-4" />}
+            >
+              Back to Components
+            </Button>
+            
+            <div className="flex gap-2">
+              {onPrevious && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onPrevious}
+                  leftIcon={<ChevronLeft className="w-4 h-4" />}
+                >
+                  Previous
+                </Button>
+              )}
+              {onNext && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onNext}
+                  rightIcon={<ChevronRight className="w-4 h-4" />}
+                >
+                  Next
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-6">
+            {component.icon && (
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/50 dark:to-purple-900/50">
+                <div className="w-8 h-8 text-blue-600 dark:text-blue-400">
+                  {component.icon}
+                </div>
+              </div>
+            )}
+            
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <h1 className="text-4xl font-bold">{component.name}</h1>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getComplexityColor(component.complexity)}`}>
+                  {component.complexity}
+                </span>
+              </div>
+              
+              <p className="text-xl text-gray-600 dark:text-gray-400 mb-4">
+                {component.description}
+              </p>
+              
+              <div className="flex flex-wrap gap-2 mb-4">
+                {component.tags.map((tag) => (
+                  <Badge key={tag} variant="outline" size="sm">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+              
+              <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-2">
+                  <Package className="w-4 h-4" />
+                  <span>{component.dependencies.length} dependencies</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex flex-col gap-2">
+            {component.new && <Badge variant="success">New</Badge>}
+            {component.premium && <Badge variant="premium">Pro</Badge>}
+            {component.featured && <Badge variant="warning">Featured</Badge>}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} variant="underline">
+        <Tabs.List className="grid w-full grid-cols-4">
+          <Tabs.Trigger value="overview">
+            <div className="flex items-center gap-2">
+              <Info className="w-4 h-4" />
+              Overview
+            </div>
+          </Tabs.Trigger>
+          <Tabs.Trigger value="examples">
+            <div className="flex items-center gap-2">
+              <Code className="w-4 h-4" />
+              {t('code.examples')}
+            </div>
+          </Tabs.Trigger>
+          <Tabs.Trigger value="props">
+            <div className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              {t('code.props')}
+            </div>
+          </Tabs.Trigger>
+          <Tabs.Trigger value="usage">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              {t('code.usage')}
+            </div>
+          </Tabs.Trigger>
+        </Tabs.List>
+
+        {/* Overview Tab */}
+        <Tabs.Content value="overview">
+          <div className="space-y-8">
+            {/* Interactive Demo */}
+            <Card variant="elevated">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Eye className="w-5 h-5" />
+                    Interactive Demo
+                  </CardTitle>
+                  
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                      <Button
+                        variant={viewportSize === 'desktop' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewportSize('desktop')}
+                      >
+                        <Monitor className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant={viewportSize === 'tablet' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewportSize('tablet')}
+                      >
+                        <Tablet className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant={viewportSize === 'mobile' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewportSize('mobile')}
+                      >
+                        <Smartphone className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsPlaying(!isPlaying)}
+                      leftIcon={isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                    >
+                      {isPlaying ? 'Pause' : 'Play'}
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      leftIcon={<RotateCcw className="w-4 h-4" />}
+                    >
+                      Reset
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className={`transition-all duration-300 ${getViewportClass()}`}>
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-8 min-h-[300px] flex items-center justify-center">
+                    {renderDemo()}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              <Card variant="gradient">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-white/20 rounded-lg">
+                      <Zap className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="font-semibold text-white">Performance</h3>
+                  </div>
+                  <p className="text-white/80 text-sm mb-2">
+                    Optimized for speed and efficiency
+                  </p>
+                  <div className="text-2xl font-bold text-white">
+                    Optimized
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card variant="glass">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                      <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <h3 className="font-semibold">Dependencies</h3>
+                  </div>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                    Minimal external dependencies
+                  </p>
+                  <div className="text-2xl font-bold">
+                    {component.dependencies.length} packages
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card variant="neon">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg">
+                      <Code className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <h3 className="font-semibold">Code Quality</h3>
+                  </div>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                    Lightweight and tree-shakeable
+                  </p>
+                  <div className="text-2xl font-bold">
+                    High Quality
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Dependencies */}
+            <Card variant="elevated">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="w-5 h-5" />
+                  Dependencies
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {component.dependencies.map((dep) => (
+                    <div
+                      key={dep}
+                      className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                    >
+                      <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded">
+                        <Package className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div>
+                        <div className="font-medium">{dep}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Required
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </Tabs.Content>
+
+        {/* Examples Tab */}
+        <Tabs.Content value="examples">
+          <div className="space-y-6">
+            {codeExamples.map((example, index) => (
+              <Card key={index} variant="elevated">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge 
+                          variant={
+                            example.category === 'basic' ? 'success' :
+                            example.category === 'advanced' ? 'warning' :
+                            example.category === 'custom' ? 'premium' : 'default'
+                          }
+                          size="sm"
+                        >
+                          {example.category}
+                        </Badge>
+                      </div>
+                      <CardTitle>{example.title}</CardTitle>
+                      <p className="text-gray-600 dark:text-gray-400 mt-1">
+                        {example.description}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyCode(example.code, example.title)}
+                      leftIcon={copied === example.title ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    >
+                      {copied === example.title ? t('action.copied') : t('action.copy')}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <pre className="bg-gray-900 text-gray-100 p-6 rounded-xl overflow-x-auto text-sm leading-relaxed">
+                    <code>{example.code}</code>
+                  </pre>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </Tabs.Content>
+
+        {/* Properties Tab */}
+        <Tabs.Content value="props">
+          <Card variant="elevated">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Component Properties
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                      <th className="text-left py-3 px-4 font-semibold">Property</th>
+                      <th className="text-left py-3 px-4 font-semibold">Type</th>
+                      <th className="text-left py-3 px-4 font-semibold">Required</th>
+                      <th className="text-left py-3 px-4 font-semibold">Default</th>
+                      <th className="text-left py-3 px-4 font-semibold">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {properties.map((prop, index) => (
+                      <tr key={index} className="border-b border-gray-100 dark:border-gray-800">
+                        <td className="py-3 px-4">
+                          <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">
+                            {prop.name}
+                          </code>
+                        </td>
+                        <td className="py-3 px-4">
+                          <code className="text-blue-600 dark:text-blue-400 text-sm">
+                            {prop.type}
+                          </code>
+                        </td>
+                        <td className="py-3 px-4">
+                          {prop.required ? (
+                            <Badge variant="error" size="sm">Required</Badge>
+                          ) : (
+                            <Badge variant="outline" size="sm">Optional</Badge>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          {prop.default ? (
+                            <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">
+                              {prop.default}
+                            </code>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
+                          {prop.description}
+                          {prop.examples && (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {prop.examples.map((example, i) => (
+                                <code key={i} className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-1 py-0.5 rounded text-xs">
+                                  {example}
+                                </code>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </Tabs.Content>
+
+        {/* Usage Tab */}
+        <Tabs.Content value="usage">
+          <div className="space-y-6">
+            {usageExamples.map((example, index) => (
+              <Card key={index} variant="elevated">
+                <CardHeader>
+                  <CardTitle>{example.title}</CardTitle>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {example.description}
+                  </p>
+                  <div className="mt-2">
+                    <Badge variant="outline" size="sm">
+                      {example.scenario}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <pre className="bg-gray-900 text-gray-100 p-6 rounded-xl overflow-x-auto text-sm leading-relaxed">
+                    <code>{example.code}</code>
+                  </pre>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </Tabs.Content>
+      </Tabs>
+    </div>
+  );
+}; 

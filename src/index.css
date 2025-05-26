@@ -257,7 +257,19 @@
   }
   
   .toast-info {
-    @apply pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black/5 border-l-4 border-primary-400;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800;
+  }
+  
+  /* DatePicker Portal Styles */
+  .datepicker-portal {
+    position: fixed !important;
+    z-index: 999999999 !important;
+    pointer-events: auto !important;
+    overflow: visible !important;
+  }
+  
+  .datepicker-portal * {
+    pointer-events: auto !important;
   }
 }
 

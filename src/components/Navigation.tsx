@@ -77,14 +77,14 @@ export const Navigation: React.FC = () => {
               leftIcon={<Github size={16} />}
               className="text-gray-700 dark:text-gray-300"
             >
-              GitHub
+              {t('nav.github')}
             </Button>
             <Button
               variant="default"
               size="sm"
               leftIcon={<Star size={16} />}
             >
-              Star
+              {t('nav.star')}
             </Button>
           </div>
 
@@ -134,7 +134,7 @@ export const Navigation: React.FC = () => {
                 leftIcon={<Github size={16} />}
                 className="w-full justify-start"
               >
-                GitHub
+                {t('nav.github')}
               </Button>
               <Button
                 variant="default"
@@ -142,7 +142,7 @@ export const Navigation: React.FC = () => {
                 leftIcon={<Star size={16} />}
                 className="w-full justify-start"
               >
-                Star
+                {t('nav.star')}
               </Button>
             </div>
           </div>

@@ -72,17 +72,19 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
             {/* Modal Content */}
             <motion.div
               ref={ref}
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.9, y: 50 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              exit={{ opacity: 0, scale: 0.9, y: 50 }}
+              whileHover={{ scale: 1.01 }}
               transition={{ 
                 type: "spring", 
-                stiffness: 400, 
-                damping: 25,
-                duration: 0.3 
+                stiffness: 300, 
+                damping: 30,
+                duration: 0.4 
               }}
               className={cn(
-                'relative w-full mx-4 rounded-2xl shadow-2xl',
+                'relative w-full mx-4 rounded-2xl shadow-2xl transform-gpu',
+                'hover:shadow-3xl transition-shadow duration-300',
                 sizeClasses[size],
                 variantClasses[variant],
                 className

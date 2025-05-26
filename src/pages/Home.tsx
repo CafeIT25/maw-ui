@@ -1,55 +1,58 @@
 import React from 'react'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { Sparkles, Zap, Palette, Code, Shield, Rocket, Github, Download } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import { Hero } from '../components/Hero'
 
 export const Home: React.FC = () => {
+  const { t } = useTranslation()
+
   const features = [
     {
       icon: <Sparkles className="w-8 h-8" />,
-      title: 'Next-Generation Design',
-      description: '最新のデザイントレンドを取り入れた美しいコンポーネント。Glass morphism、Neon effects、Premium gradientsなど、次世代のUIパターンを実装。',
+      title: t('feature.nextGenDesign'),
+      description: t('feature.nextGenDesignDesc'),
       gradient: 'from-blue-500 to-purple-600'
     },
     {
       icon: <Zap className="w-8 h-8" />,
-      title: 'High Performance',
-      description: 'Framer Motionによる60FPSの滑らかなアニメーション。最適化されたレンダリングとメモ化により、大規模アプリケーションでも高速動作。',
+      title: t('feature.performant'),
+      description: t('feature.performantDesc'),
       gradient: 'from-yellow-500 to-orange-600'
     },
     {
       icon: <Palette className="w-8 h-8" />,
-      title: 'Fully Customizable',
-      description: '豊富なバリアントとテーマシステム。CVA（Class Variance Authority）により、型安全なスタイリングとカスタマイズが可能。',
+      title: t('feature.customizable'),
+      description: t('feature.customizableDesc'),
       gradient: 'from-pink-500 to-rose-600'
     },
     {
       icon: <Code className="w-8 h-8" />,
-      title: 'Developer Experience',
-      description: 'TypeScript完全対応、IntelliSenseサポート、包括的なドキュメント。開発者の生産性を最大化する設計。',
+      title: t('feature.developerExperience'),
+      description: t('feature.developerExperienceDesc'),
       gradient: 'from-green-500 to-emerald-600'
     },
     {
       icon: <Shield className="w-8 h-8" />,
-      title: 'Accessibility First',
-      description: 'WCAG 2.1準拠のアクセシビリティ。キーボードナビゲーション、スクリーンリーダー対応、適切なARIA属性を実装。',
+      title: t('feature.accessible'),
+      description: t('feature.accessibleDesc'),
       gradient: 'from-indigo-500 to-blue-600'
     },
     {
       icon: <Rocket className="w-8 h-8" />,
-      title: 'Production Ready',
-      description: 'エンタープライズレベルの品質。包括的なテスト、パフォーマンス最適化、本番環境での実績。',
+      title: t('feature.productionReady'),
+      description: t('feature.productionReadyDesc'),
       gradient: 'from-purple-500 to-pink-600'
     }
   ]
 
   const stats = [
-    { number: '50+', label: 'Components', description: '豊富なコンポーネント' },
-    { number: '200+', label: 'Variants', description: 'カスタマイズオプション' },
-    { number: '100%', label: 'TypeScript', description: '型安全性' },
-    { number: '60fps', label: 'Animations', description: '滑らかなアニメーション' }
+    { number: '50+', label: t('nav.components'), description: t('stats.richComponents') },
+    { number: '200+', label: t('stats.variants'), description: t('stats.customizationOptions') },
+    { number: '100%', label: t('feature.typescript'), description: t('stats.typeSafety') },
+    { number: '60fps', label: t('stats.animations'), description: t('stats.smoothAnimations') }
   ]
 
   return (
@@ -68,13 +71,12 @@ export const Home: React.FC = () => {
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Why Choose
+                {t('home.whyChoose')}
               </span>
               <span className="text-gray-900 dark:text-white"> MAW UI?</span>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              次世代のWebアプリケーション開発に必要なすべてを提供する、
-              革新的なUIコンポーネントライブラリです。
+              {t('home.whyChooseDesc')}
             </p>
           </motion.div>
 
@@ -120,10 +122,10 @@ export const Home: React.FC = () => {
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 dark:text-white">
-              Numbers That Matter
+              {t('home.numbersThatMatter')}
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300">
-              MAW UIの実績と品質を数字で表現
+              {t('home.numbersDesc')}
             </p>
           </motion.div>
 
@@ -162,13 +164,13 @@ export const Home: React.FC = () => {
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-              Beautiful Code,{' '}
+              {t('home.beautifulCode')},{' '}
               <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Beautiful UI
+                {t('home.beautifulUI')}
               </span>
             </h2>
             <p className="text-xl text-gray-300">
-              シンプルで直感的なAPIで、美しいUIを簡単に構築
+              {t('home.beautifulCodeDesc')}
             </p>
           </motion.div>
 
@@ -194,15 +196,13 @@ function App() {
   return (
     <Card variant="glass" className="p-8">
       <h1 className="text-2xl font-bold mb-6">
-        Welcome to MAW UI
+        ${t('home.welcomeToMAW')}
       </h1>
       
       <div className="space-y-4">
         <Input 
-          variant="neon"
-          placeholder="Enter your email"
-          floating
-          label="Email Address"
+          placeholder="${t('home.enterYourName')}" 
+          variant="floating" 
         />
         
         <Button 
@@ -210,7 +210,7 @@ function App() {
           size="lg"
           className="w-full"
         >
-          Get Started
+          ${t('hero.getStarted')}
         </Button>
       </div>
     </Card>
@@ -222,44 +222,38 @@ function App() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Ready to Build the Future?
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              {t('home.readyToStart')}
             </h2>
-            <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto">
-              MAW UIで次世代のWebアプリケーションを構築しましょう。
-              今すぐ始めて、開発体験の違いを実感してください。
+            <p className="text-xl text-blue-100 mb-8">
+              {t('home.readyToStartDesc')}
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
-                size="xl"
                 variant="glass"
-                leftIcon={<Download className="w-6 h-6" />}
-                className="text-lg px-12 py-6"
+                size="lg"
+                leftIcon={<Download className="w-5 h-5" />}
+                className="text-white border-white/30 hover:bg-white/10"
               >
-                Install MAW UI
+                {t('action.download')} MAW UI
               </Button>
+              
               <Button
-                size="xl"
                 variant="outline"
-                leftIcon={<Github className="w-6 h-6" />}
-                className="text-lg px-12 py-6 border-white text-white hover:bg-white hover:text-purple-600"
+                size="lg"
+                leftIcon={<Github className="w-5 h-5" />}
+                className="border-white/30 text-white hover:bg-white/10"
               >
-                View on GitHub
+                {t('action.view')} {t('footer.github')}
               </Button>
-            </div>
-
-            <div className="mt-12 text-blue-100">
-              <code className="bg-black/20 px-4 py-2 rounded-lg">
-                npm install @maw-ui/react
-              </code>
             </div>
           </motion.div>
         </div>

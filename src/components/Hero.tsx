@@ -11,18 +11,18 @@ export const Hero: React.FC = () => {
   const features = [
     {
       icon: <Sparkles className="w-6 h-6" />,
-      title: 'Next-Gen Design',
-      description: t('desc.nextGenDesign', 'Beautiful components with the latest design trends')
+      title: t('feature.nextGenDesign'),
+      description: t('feature.nextGenDesignDesc')
     },
     {
       icon: <Zap className="w-6 h-6" />,
-      title: 'High Performance',
-      description: t('desc.highPerformance', 'Smooth animations with Framer Motion and optimized performance')
+      title: t('feature.performant'),
+      description: t('feature.performantDesc')
     },
     {
       icon: <Palette className="w-6 h-6" />,
-      title: 'Customizable',
-      description: t('desc.customizable', 'Fully customizable with rich variants and themes')
+      title: t('feature.customizable'),
+      description: t('feature.customizableDesc')
     }
   ]
 
@@ -111,31 +111,31 @@ export const Hero: React.FC = () => {
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
-                Interactive Component Preview
+                {t('demo.interactivePreview')}
               </h2>
               <p className="text-gray-600 dark:text-gray-300">
-                {t('hero.tryComponents', 'Try out the actual components')}
+                {t('hero.tryComponents')}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Button variant="default">Default</Button>
-              <Button variant="premium">Premium</Button>
-              <Button variant="neon">Neon</Button>
-              <Button variant="glass">Glass</Button>
+              <Button variant="default">{t('demo.default')}</Button>
+              <Button variant="premium">{t('demo.premium')}</Button>
+              <Button variant="neon">{t('demo.neon')}</Button>
+              <Button variant="glass">{t('demo.glass')}</Button>
             </div>
 
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card variant="gradient" className="p-4">
-                <h3 className="font-semibold mb-2">Gradient Card</h3>
+                <h3 className="font-semibold mb-2">{t('demo.gradientCard')}</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Beautiful gradient backgrounds
+                  {t('demo.gradientCardDesc')}
                 </p>
               </Card>
               <Card variant="neon" className="p-4">
-                <h3 className="font-semibold mb-2 text-cyan-400">Neon Card</h3>
+                <h3 className="font-semibold mb-2 text-cyan-400">{t('demo.neonCard')}</h3>
                 <p className="text-sm text-gray-300">
-                  Futuristic neon effects
+                  {t('demo.neonCardDesc')}
                 </p>
               </Card>
             </div>

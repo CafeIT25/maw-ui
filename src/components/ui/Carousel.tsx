@@ -93,7 +93,7 @@ const Carousel = forwardRef<HTMLDivElement, CarouselProps>(
     className, 
     variant, 
     size,
-    items,
+    items = [],
     autoPlay = false,
     autoPlayInterval = 3000,
     loop = true,
@@ -181,16 +181,22 @@ const Carousel = forwardRef<HTMLDivElement, CarouselProps>(
     }, [items.length, currentSlidesToShow, effect])
 
     const goToSlide = useCallback((index: number) => {
-      const maxIndex = Math.max(0, items.length - currentSlidesToShow)
+      if (items.length === 0) return
+      
       let newIndex = index
 
       if (infinite || loop) {
+        // 無限ループの場合、インデックスを正規化
         if (index < 0) {
-          newIndex = items.length - currentSlidesToShow
-        } else if (index > maxIndex) {
+          newIndex = items.length - 1
+        } else if (index >= items.length) {
           newIndex = 0
+        } else {
+          newIndex = index
         }
       } else {
+        // 通常の場合、範囲内に制限
+        const maxIndex = Math.max(0, items.length - currentSlidesToShow)
         newIndex = Math.max(0, Math.min(index, maxIndex))
       }
 

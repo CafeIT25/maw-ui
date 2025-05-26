@@ -27,7 +27,7 @@ export interface DatePickerProps {
     value: Date | [Date, Date]
   }>
   className?: string
-  variant?: 'default' | 'filled' | 'outlined' | 'ghost' | 'neon'
+  variant?: 'default' | 'filled' | 'outlined' | 'ghost' | 'neon' | 'glass' | 'gradient'
   size?: 'sm' | 'default' | 'lg'
   clearable?: boolean
   showToday?: boolean
@@ -75,6 +75,8 @@ const getWeekNumber = (date: Date) => {
   return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7)
 }
 
+const today = new Date()
+
 export const DatePicker: React.FC<DatePickerProps> = ({
   value,
   defaultValue,
@@ -103,7 +105,55 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const [timeValue, setTimeValue] = useState({ hours: 0, minutes: 0 })
   
   const containerRef = useRef<HTMLDivElement>(null)
+  const calendarRef = useRef<HTMLDivElement>(null)
   const currentValue = value !== undefined ? value : internalValue
+
+  // Handle keyboard interaction
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      if (disabled) return
+      setIsOpen(!isOpen)
+    }
+  }
+
+  // Handle input click
+  const handleInputClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    if (disabled) {
+      return
+    }
+    
+    setIsOpen(!isOpen)
+  }
+
+  // Handle outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current && 
+        !containerRef.current.contains(event.target as Node) &&
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
 
   // Generate calendar days
   const generateCalendarDays = () => {
@@ -195,15 +245,19 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const getDisplayValue = () => {
     if (!currentValue) return ''
     
-    if (Array.isArray(currentValue)) {
+    if (range && Array.isArray(currentValue)) {
       const [start, end] = currentValue
       if (isSameDay(start, end)) {
-        return formatDate(start, format)
+        return formatDate(start, showTime ? 'YYYY-MM-DD HH:mm' : format)
       }
       return `${formatDate(start, format)} - ${formatDate(end, format)}`
     }
     
-    return formatDate(currentValue, showTime ? `${format} HH:mm` : format)
+    if (currentValue instanceof Date) {
+      return formatDate(currentValue, showTime ? 'YYYY-MM-DD HH:mm' : format)
+    }
+    
+    return ''
   }
 
   // Check if date is selected
@@ -231,68 +285,69 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     return isInRange(date, rangeStart, rangeEnd)
   }
 
-  // Handle click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  const today = new Date()
-
   return (
-    <div ref={containerRef} className={cn('relative w-full', className)}>
-      <Input
-        value={getDisplayValue()}
-        placeholder={placeholder}
-        readOnly
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-        disabled={disabled}
-        variant={variant}
-        size={size}
-        leftIcon={<Calendar size={16} />}
-        rightIcon={
-          clearable && currentValue ? (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                handleClear()
-              }}
-              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-            >
-              <X size={14} />
-            </button>
-          ) : undefined
-        }
-        className="cursor-pointer"
-      />
+    <div 
+      ref={containerRef} 
+      className={cn('relative', className)}
+    >
+      <div 
+        onClick={handleInputClick}
+        className="cursor-pointer w-full"
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        onKeyDown={handleKeyDown}
+      >
+        <Input
+          value={getDisplayValue()}
+          placeholder={placeholder}
+          readOnly
+          disabled={disabled}
+          variant={variant}
+          size={size}
+          leftIcon={<Calendar size={16} />}
+          rightIcon={
+            clearable && currentValue ? (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleClear()
+                }}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+              >
+                <X size={14} />
+              </button>
+            ) : undefined
+          }
+          className="cursor-pointer"
+          onClick={handleInputClick}
+        />
+      </div>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            ref={calendarRef}
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
             className={cn(
-              'absolute z-50 mt-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700',
-              'rounded-xl shadow-lg overflow-hidden',
-              variant === 'neon' && 'bg-black border-cyan-400 shadow-cyan-400/25'
+              'absolute top-full left-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700',
+              'rounded-xl shadow-2xl overflow-visible min-w-[320px] max-w-[90vw] pointer-events-auto z-50',
+              'backdrop-blur-sm',
+              variant === 'neon' && 'bg-black border-cyan-400 shadow-cyan-400/25',
+              variant === 'glass' && 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md',
+              variant === 'gradient' && 'bg-gradient-to-br from-white to-purple-50 dark:from-gray-900 dark:to-purple-950 border-purple-200 dark:border-purple-800'
             )}
           >
             <div className="flex">
               {/* Presets */}
               {presets && presets.length > 0 && (
-                <div className="w-48 border-r border-gray-200 dark:border-gray-700 p-2">
+                <div className="w-48 border-r border-gray-200 dark:border-gray-700 p-2 overflow-visible">
                   <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Quick Select
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1 overflow-visible">
                     {presets.map((preset, index) => (
                       <button
                         key={index}
@@ -307,7 +362,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               )}
 
               {/* Calendar */}
-              <div className="p-4">
+              <div className="p-4 overflow-visible">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
                   <Button
