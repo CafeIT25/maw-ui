@@ -77,7 +77,7 @@ export interface TabsListProps {
 }
 
 export const TabsList: React.FC<TabsListProps> = ({ className, children }) => {
-  const { orientation, variant } = useTabsContext()
+  const { orientation, variant, activeTab } = useTabsContext()
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0, top: 0, height: 0 })
   const listRef = useRef<HTMLDivElement>(null)
 
@@ -116,10 +116,20 @@ export const TabsList: React.FC<TabsListProps> = ({ className, children }) => {
       }
     }
 
+    // Update indicator immediately and on activeTab change
     updateIndicator()
+    
+    // Use requestAnimationFrame for smooth updates
+    const timeoutId = setTimeout(() => {
+      updateIndicator()
+    }, 0)
+
     window.addEventListener('resize', updateIndicator)
-    return () => window.removeEventListener('resize', updateIndicator)
-  }, [orientation])
+    return () => {
+      window.removeEventListener('resize', updateIndicator)
+      clearTimeout(timeoutId)
+    }
+  }, [orientation, activeTab]) // Add activeTab to dependencies
 
   return (
     <div
@@ -179,21 +189,21 @@ export const TabsTrigger: React.FC<TabsTriggerProps> = ({
       'relative z-10 px-3 py-1.5 text-sm font-medium transition-colors',
       'hover:text-gray-900 dark:hover:text-gray-100',
       isActive
-        ? 'text-gray-900 dark:text-gray-100'
+        ? 'text-gray-900 dark:text-gray-100 font-semibold'
         : 'text-gray-600 dark:text-gray-400'
     ),
     pills: cn(
       'relative z-10 px-4 py-2 text-sm font-medium transition-colors rounded-lg',
       'hover:text-gray-900 dark:hover:text-gray-100',
       isActive
-        ? 'text-gray-900 dark:text-gray-100'
+        ? 'text-gray-900 dark:text-gray-100 font-semibold'
         : 'text-gray-600 dark:text-gray-400'
     ),
     underline: cn(
       'relative px-4 py-2 text-sm font-medium transition-colors border-b-2',
       'hover:text-gray-900 dark:hover:text-gray-100',
       isActive
-        ? 'text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400'
+        ? 'text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400 font-semibold'
         : 'text-gray-600 dark:text-gray-400 border-transparent hover:border-gray-300 dark:hover:border-gray-600'
     ),
     cards: cn(

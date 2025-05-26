@@ -18,7 +18,9 @@ import {
   Camera,
   Monitor,
   Target,
-  Wand2
+  Wand2,
+  Brain,
+  Volume2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Input } from './ui/Input';
@@ -36,9 +38,11 @@ export interface ComponentItem {
   new?: boolean;
   premium?: boolean;
   featured?: boolean;
+  experimental?: boolean;
   icon?: React.ReactNode;
   previewImage?: string;
   dependencies: string[];
+  codeSize?: number;
 }
 
 export interface ComponentCategory {
@@ -54,11 +58,12 @@ export interface ComponentCategory {
   premium?: boolean;
 }
 
-const componentCategories: ComponentCategory[] = [
+// Function to get translated component categories
+export const componentCategories = (t: (key: string) => string): ComponentCategory[] => [
   {
     id: 'form',
-    name: 'Form Controls',
-    description: 'Interactive form elements and input components',
+    name: t('category.formControls'),
+    description: t('category.formControlsDesc'),
     icon: <FileText className="w-6 h-6" />,
     color: 'blue',
     gradient: 'from-blue-500 to-cyan-500',
@@ -66,8 +71,8 @@ const componentCategories: ComponentCategory[] = [
     components: [
       {
         id: 'button',
-        name: 'Button',
-        description: 'Versatile button component with 11 variants',
+        name: t('component.button'),
+        description: t('desc.button'),
         category: 'form',
         tags: ['interactive', 'action', 'primary'],
         complexity: 'basic',
@@ -77,8 +82,8 @@ const componentCategories: ComponentCategory[] = [
       },
       {
         id: 'input',
-        name: 'Input',
-        description: 'Advanced input fields with validation',
+        name: t('component.input'),
+        description: t('desc.input'),
         category: 'form',
         tags: ['text', 'validation', 'form'],
         complexity: 'intermediate',
@@ -87,8 +92,8 @@ const componentCategories: ComponentCategory[] = [
       },
       {
         id: 'select',
-        name: 'Select',
-        description: 'Customizable dropdown selection component',
+        name: t('component.select'),
+        description: t('desc.select'),
         category: 'form',
         tags: ['dropdown', 'selection', 'options'],
         complexity: 'intermediate',
@@ -97,8 +102,8 @@ const componentCategories: ComponentCategory[] = [
       },
       {
         id: 'slider',
-        name: 'Slider',
-        description: 'Range and value slider components',
+        name: t('component.slider'),
+        description: t('desc.slider'),
         category: 'form',
         tags: ['range', 'value', 'control'],
         complexity: 'intermediate',
@@ -107,28 +112,40 @@ const componentCategories: ComponentCategory[] = [
       },
       {
         id: 'datepicker',
-        name: 'Date Picker',
-        description: 'Advanced date and time selection',
+        name: t('component.datePicker'),
+        description: t('desc.datePicker'),
         category: 'form',
         tags: ['date', 'time', 'calendar'],
         complexity: 'advanced',
         icon: <Calendar className="w-4 h-4" />,
         dependencies: ['date-fns', 'react-datepicker']
+      },
+      {
+        id: 'aiassistant',
+        name: t('component.aiAssistant'),
+        description: t('desc.aiAssistant'),
+        category: 'form',
+        tags: ['ai', 'chat', 'voice', 'intelligent'],
+        complexity: 'expert',
+        premium: true,
+        new: true,
+        icon: <Brain className="w-4 h-4" />,
+        dependencies: ['framer-motion', 'speech-recognition']
       }
     ]
   },
   {
     id: 'layout',
-    name: 'Layout',
-    description: 'Structural components for organizing content',
+    name: t('category.layoutComponents'),
+    description: t('category.layoutComponentsDesc'),
     icon: <Grid3X3 className="w-6 h-6" />,
     color: 'purple',
     gradient: 'from-purple-500 to-pink-500',
     components: [
       {
         id: 'card',
-        name: 'Card',
-        description: 'Flexible container with 8 style variants',
+        name: t('component.card'),
+        description: t('desc.card'),
         category: 'layout',
         tags: ['container', 'content', 'flexible'],
         complexity: 'basic',
@@ -138,8 +155,8 @@ const componentCategories: ComponentCategory[] = [
       },
       {
         id: 'tabs',
-        name: 'Tabs',
-        description: 'Tabbed interface with multiple styles',
+        name: t('component.tabs'),
+        description: t('desc.tabs'),
         category: 'layout',
         tags: ['navigation', 'organization', 'content'],
         complexity: 'intermediate',
@@ -148,8 +165,8 @@ const componentCategories: ComponentCategory[] = [
       },
       {
         id: 'accordion',
-        name: 'Accordion',
-        description: 'Collapsible content sections',
+        name: t('component.accordion'),
+        description: t('desc.accordion'),
         category: 'layout',
         tags: ['collapsible', 'expandable', 'content'],
         complexity: 'intermediate',
@@ -158,8 +175,8 @@ const componentCategories: ComponentCategory[] = [
       },
       {
         id: 'modal',
-        name: 'Modal',
-        description: 'Overlay dialogs and modals',
+        name: t('component.modal'),
+        description: t('desc.modal'),
         category: 'layout',
         tags: ['overlay', 'dialog', 'popup'],
         complexity: 'intermediate',
@@ -170,8 +187,8 @@ const componentCategories: ComponentCategory[] = [
   },
   {
     id: 'data',
-    name: 'Data Display',
-    description: 'Components for presenting and visualizing data',
+    name: t('category.dataDisplay'),
+    description: t('category.dataDisplayDesc'),
     icon: <BarChart3 className="w-6 h-6" />,
     color: 'green',
     gradient: 'from-green-500 to-emerald-500',
@@ -179,8 +196,8 @@ const componentCategories: ComponentCategory[] = [
     components: [
       {
         id: 'datatable',
-        name: 'Data Table',
-        description: 'Advanced table with sorting and filtering',
+        name: t('component.dataTable'),
+        description: t('desc.dataTable'),
         category: 'data',
         tags: ['table', 'data', 'sorting', 'filtering'],
         complexity: 'advanced',
@@ -190,8 +207,8 @@ const componentCategories: ComponentCategory[] = [
       },
       {
         id: 'datavisualization',
-        name: 'Data Visualization',
-        description: 'Charts and graphs for data presentation',
+        name: t('component.dataVisualization'),
+        description: t('desc.dataVisualization'),
         category: 'data',
         tags: ['charts', 'graphs', 'visualization'],
         complexity: 'advanced',
@@ -200,8 +217,8 @@ const componentCategories: ComponentCategory[] = [
       },
       {
         id: 'advanceddataviz',
-        name: 'Advanced Data Viz',
-        description: 'Complex data visualization components',
+        name: t('component.advancedDataViz'),
+        description: t('desc.advancedDataViz'),
         category: 'data',
         tags: ['advanced', 'interactive', 'real-time'],
         complexity: 'expert',
@@ -211,8 +228,8 @@ const componentCategories: ComponentCategory[] = [
       },
       {
         id: 'avatar',
-        name: 'Avatar',
-        description: 'User profile pictures and placeholders',
+        name: t('component.avatar'),
+        description: t('desc.avatar'),
         category: 'data',
         tags: ['user', 'profile', 'image'],
         complexity: 'basic',
@@ -228,6 +245,40 @@ const componentCategories: ComponentCategory[] = [
         complexity: 'basic',
         icon: <Target className="w-4 h-4" />,
         dependencies: []
+      },
+      {
+        id: 'modelviewer3d',
+        name: '3D Model Viewer',
+        description: 'Interactive 3D model visualization with AR/VR support',
+        category: 'data',
+        tags: ['3d', 'model', 'ar', 'vr', 'interactive'],
+        complexity: 'expert',
+        premium: true,
+        new: true,
+        icon: <Layers className="w-4 h-4" />,
+        dependencies: ['three.js', 'react-three-fiber']
+      },
+      {
+        id: 'audioplayer',
+        name: 'Audio Player',
+        description: 'Advanced audio player with waveform visualization',
+        category: 'data',
+        tags: ['audio', 'music', 'waveform', 'player'],
+        complexity: 'advanced',
+        new: true,
+        icon: <Volume2 className="w-4 h-4" />,
+        dependencies: ['wavesurfer.js', 'framer-motion']
+      },
+      {
+        id: 'videoplayer',
+        name: 'Video Player',
+        description: 'Professional video player with advanced controls',
+        category: 'data',
+        tags: ['video', 'player', 'streaming', 'controls'],
+        complexity: 'advanced',
+        new: true,
+        icon: <Monitor className="w-4 h-4" />,
+        dependencies: ['video.js', 'hls.js']
       }
     ]
   },
@@ -267,6 +318,73 @@ const componentCategories: ComponentCategory[] = [
         tags: ['loading', 'progress', 'indicator'],
         complexity: 'intermediate',
         icon: <Zap className="w-4 h-4" />,
+        dependencies: ['framer-motion']
+      },
+      {
+        id: 'tooltip',
+        name: 'Tooltip',
+        description: 'Contextual information overlays',
+        category: 'feedback',
+        tags: ['overlay', 'contextual', 'information'],
+        complexity: 'intermediate',
+        new: true,
+        icon: <MessageSquare className="w-4 h-4" />,
+        dependencies: ['framer-motion', 'react-dom']
+      }
+    ]
+  },
+  {
+    id: 'navigation',
+    name: 'Navigation',
+    description: 'Navigation and interaction components',
+    icon: <NavIcon className="w-6 h-6" />,
+    color: 'teal',
+    gradient: 'from-teal-500 to-green-500',
+    new: true,
+    components: [
+      {
+        id: 'dropdown',
+        name: 'Dropdown',
+        description: 'Advanced dropdown menus with positioning',
+        category: 'navigation',
+        tags: ['menu', 'dropdown', 'positioning'],
+        complexity: 'advanced',
+        featured: true,
+        new: true,
+        icon: <NavIcon className="w-4 h-4" />,
+        dependencies: ['framer-motion', 'react-dom']
+      },
+      {
+        id: 'popover',
+        name: 'Popover',
+        description: 'Floating content containers with rich interactions',
+        category: 'navigation',
+        tags: ['popover', 'floating', 'overlay'],
+        complexity: 'advanced',
+        featured: true,
+        new: true,
+        icon: <MessageSquare className="w-4 h-4" />,
+        dependencies: ['framer-motion', 'react-dom']
+      }
+    ]
+  },
+  {
+    id: 'input',
+    name: 'Input Controls',
+    description: 'Advanced input and control components',
+    icon: <Settings className="w-6 h-6" />,
+    color: 'violet',
+    gradient: 'from-violet-500 to-purple-500',
+    components: [
+      {
+        id: 'switch',
+        name: 'Switch',
+        description: 'Toggle switches with multiple variants',
+        category: 'input',
+        tags: ['toggle', 'switch', 'boolean'],
+        complexity: 'intermediate',
+        new: true,
+        icon: <Settings className="w-4 h-4" />,
         dependencies: ['framer-motion']
       }
     ]
@@ -395,9 +513,9 @@ export const ComponentNavigation: React.FC<ComponentNavigationProps> = ({
     let allComponents: ComponentItem[] = [];
     
     if (selectedCategory === 'all') {
-      allComponents = componentCategories.flatMap(cat => cat.components);
+      allComponents = componentCategories(t).flatMap(cat => cat.components);
     } else {
-      const category = componentCategories.find(cat => cat.id === selectedCategory);
+      const category = componentCategories(t).find(cat => cat.id === selectedCategory);
       allComponents = category?.components || [];
     }
 
@@ -430,7 +548,7 @@ export const ComponentNavigation: React.FC<ComponentNavigationProps> = ({
     });
 
     return allComponents;
-  }, [searchQuery, selectedCategory, complexityFilter, sortBy]);
+  }, [searchQuery, selectedCategory, complexityFilter, sortBy, t]);
 
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {
@@ -454,7 +572,7 @@ export const ComponentNavigation: React.FC<ComponentNavigationProps> = ({
           {t('nav.components')}
         </h1>
         <p className="text-gray-600 dark:text-gray-400 text-lg">
-          {t('componentLibrary.description', `Discover our collection of ${componentCategories.reduce((acc, cat) => acc + cat.components.length, 0)} premium UI components`)}
+          {t('componentLibrary.description', `Discover our collection of ${componentCategories(t).reduce((acc, cat) => acc + cat.components.length, 0)} premium UI components`)}
         </p>
       </motion.div>
 
@@ -513,17 +631,17 @@ export const ComponentNavigation: React.FC<ComponentNavigationProps> = ({
               className="flex flex-wrap gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
             >
               <div className="flex items-center gap-2">
-                <label className="text-sm font-medium">Complexity:</label>
+                <label className="text-sm font-medium">{t('ui.complexity')}:</label>
                 <select
                   value={complexityFilter}
                   onChange={(e) => setComplexityFilter(e.target.value)}
                   className="px-3 py-1 rounded border bg-white dark:bg-gray-700"
                 >
-                  <option value="all">All</option>
-                  <option value="basic">Basic</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                  <option value="expert">Expert</option>
+                  <option value="all">{t('ui.all')}</option>
+                  <option value="basic">{t('ui.basic')}</option>
+                  <option value="intermediate">{t('ui.intermediate')}</option>
+                  <option value="advanced">{t('ui.advanced')}</option>
+                  <option value="expert">{t('ui.expert')}</option>
                 </select>
               </div>
               
@@ -534,8 +652,8 @@ export const ComponentNavigation: React.FC<ComponentNavigationProps> = ({
                   onChange={(e) => setSortBy(e.target.value as 'name' | 'complexity')}
                   className="px-3 py-1 rounded border bg-white dark:bg-gray-700"
                 >
-                  <option value="name">Name</option>
-                  <option value="complexity">Complexity</option>
+                  <option value="name">{t('ui.name')}</option>
+                  <option value="complexity">{t('ui.complexity')}</option>
                 </select>
               </div>
             </motion.div>
@@ -561,10 +679,10 @@ export const ComponentNavigation: React.FC<ComponentNavigationProps> = ({
                 : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
-            All Components
+            {t('ui.all')} {t('nav.components')}
           </motion.button>
           
-          {componentCategories.map((category) => (
+          {componentCategories(t).map((category) => (
             <motion.button
               key={category.id}
               whileHover={{ scale: 1.05 }}
@@ -625,9 +743,9 @@ export const ComponentNavigation: React.FC<ComponentNavigationProps> = ({
                   </div>
                   
                   <div className="flex flex-col gap-1">
-                    {component.new && <Badge variant="success" size="sm">New</Badge>}
-                    {component.premium && <Badge variant="premium" size="sm">Pro</Badge>}
-                    {component.featured && <Badge variant="warning" size="sm">Featured</Badge>}
+                    {component.new && <Badge variant="success" size="sm">{t('ui.new')}</Badge>}
+                    {component.premium && <Badge variant="premium" size="sm">{t('ui.pro')}</Badge>}
+                    {component.featured && <Badge variant="warning" size="sm">{t('ui.featured')}</Badge>}
                   </div>
                 </div>
                 
@@ -652,7 +770,7 @@ export const ComponentNavigation: React.FC<ComponentNavigationProps> = ({
                 </div>
                 
                 <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
-                  <span>{component.dependencies.length} dependencies</span>
+                  <span>{component.dependencies.length} {t('ui.dependencies')}</span>
                 </div>
               </motion.div>
             ))}
@@ -702,12 +820,12 @@ export const ComponentNavigation: React.FC<ComponentNavigationProps> = ({
                   
                   <div className="flex items-center gap-4">
                     <div className="text-right text-sm text-gray-500 dark:text-gray-400">
-                      <div>{component.dependencies.length} dependencies</div>
+                      <div>{component.dependencies.length} {t('ui.dependencies')}</div>
                     </div>
                     <div className="flex flex-col gap-1">
-                      {component.new && <Badge variant="success" size="sm">New</Badge>}
-                      {component.premium && <Badge variant="premium" size="sm">Pro</Badge>}
-                      {component.featured && <Badge variant="warning" size="sm">Featured</Badge>}
+                      {component.new && <Badge variant="success" size="sm">{t('ui.new')}</Badge>}
+                      {component.premium && <Badge variant="premium" size="sm">{t('ui.pro')}</Badge>}
+                      {component.featured && <Badge variant="warning" size="sm">{t('ui.featured')}</Badge>}
                     </div>
                   </div>
                 </div>

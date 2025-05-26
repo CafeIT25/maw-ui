@@ -13,7 +13,7 @@ export const Footer: React.FC = () => {
       { name: t('nav.components'), href: '#components' },
       { name: t('footer.documentation'), href: '#docs' },
       { name: t('footer.examples'), href: '#examples' },
-      { name: 'Changelog', href: '#changelog' },
+      { name: t('generic.changelog'), href: '#changelog' },
     ],
     community: [
       { name: t('footer.github'), href: '#github' },
@@ -22,9 +22,9 @@ export const Footer: React.FC = () => {
       { name: t('footer.blog'), href: '#blog' },
     ],
     resources: [
-      { name: 'Getting Started', href: '#getting-started' },
-      { name: 'API Reference', href: '#api' },
-      { name: 'Tutorials', href: '#tutorials' },
+      { name: t('generic.gettingStarted'), href: '#getting-started' },
+      { name: t('generic.apiReference'), href: '#api' },
+      { name: t('generic.tutorials'), href: '#tutorials' },
       { name: t('footer.support'), href: '#support' },
     ],
   }
@@ -169,9 +169,9 @@ export const Footer: React.FC = () => {
               © {currentYear} MAW UI. {t('footer.allRightsReserved')}
             </p>
             <div className="flex items-center space-x-1 text-gray-400 text-sm mt-4 md:mt-0">
-              <span>Made with</span>
+              <span>{t('social.madeWith')}</span>
               <Heart className="w-4 h-4 text-red-500" />
-              <span>by developers, for developers</span>
+              <span>{t('social.byDevelopers')}</span>
             </div>
           </div>
         </motion.div>
