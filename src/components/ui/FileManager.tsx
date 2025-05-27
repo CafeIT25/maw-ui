@@ -1,11 +1,11 @@
 import React, { forwardRef, useState, useRef, useCallback } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Folder, File, Image, Video, Music, Archive, FileText, Code, 
-  Download, Upload, Trash2, Edit, Copy, Move, Share, Star,
-  Grid, List, Search, Filter, SortAsc, SortDesc, MoreHorizontal,
-  FolderPlus, FilePlus, Eye, Info, Lock, Unlock, Clock
+import { motion } from 'framer-motion'
+import {
+  File, Folder, Image, Video, Music, Archive, FileText, Code,
+  Upload, Trash2, Edit, Copy, Move, Star,
+  Grid, List, Search, SortAsc, SortDesc,
+  FolderPlus, Eye, Lock
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
@@ -103,11 +103,11 @@ const FileManager = forwardRef<HTMLDivElement, FileManagerProps>(
     allowRename = true,
     allowMove = true,
     allowShare = true,
-    multiSelect = true,
+    multiSelect = false,
     searchable = true,
-    filterable = true,
+    filterable = false,
     showThumbnails = true,
-    showDetails = true,
+    showDetails = false,
     onFileSelect,
     onFileOpen,
     onFileUpload,
@@ -118,15 +118,15 @@ const FileManager = forwardRef<HTMLDivElement, FileManagerProps>(
     onFileShare,
     ...props 
   }, ref) => {
-    const [selectedFiles, setSelectedFiles] = useState<FileItem[]>([])
+    const [currentSortBy] = useState(sortBy)
+    const [currentSortOrder, setCurrentSortOrder] = useState(sortOrder)
     const [searchQuery, setSearchQuery] = useState('')
+    const [selectedFiles, setSelectedFiles] = useState<FileItem[]>([])
+    const [_renameFile] = useState<FileItem | null>(null)
     const [filterType, setFilterType] = useState<string>('all')
     const [currentViewMode, setCurrentViewMode] = useState(viewMode)
-    const [currentSortBy, setCurrentSortBy] = useState(sortBy)
-    const [currentSortOrder, setCurrentSortOrder] = useState(sortOrder)
     const [dragOver, setDragOver] = useState(false)
     const [contextMenu, setContextMenu] = useState<{ x: number; y: number; file?: FileItem } | null>(null)
-    const [renameFile, setRenameFile] = useState<FileItem | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     // File type icons

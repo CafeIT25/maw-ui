@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { motion } from 'framer-motion'
-import { Check, Clock, AlertCircle, Star, Calendar, MapPin } from 'lucide-react'
+import { Check, Clock, AlertCircle, Calendar, MapPin } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
 const timelineVariants = cva(
@@ -148,7 +148,7 @@ export interface TimelineItem {
   time?: string
   status?: 'pending' | 'current' | 'completed' | 'error' | 'warning'
   icon?: React.ReactNode
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   onClick?: () => void
   href?: string
 }
@@ -162,6 +162,9 @@ export interface TimelineProps
   showConnector?: boolean
   dotSize?: 'sm' | 'default' | 'lg' | 'xl'
   onItemClick?: (item: TimelineItem, index: number) => void
+  onStepClick?: (step: TimelineItem, index: number) => void
+  onComplete?: () => void
+  className?: string
 }
 
 const Timeline = forwardRef<HTMLDivElement, TimelineProps>(
@@ -178,6 +181,14 @@ const Timeline = forwardRef<HTMLDivElement, TimelineProps>(
     onItemClick,
     ...props 
   }, ref) => {
+    const statusClasses = {
+      pending: 'opacity-60',
+      current: 'ring-2 ring-blue-500',
+      completed: 'bg-green-50 dark:bg-green-900/20',
+      error: 'bg-red-50 dark:bg-red-900/20',
+      warning: 'bg-yellow-50 dark:bg-yellow-900/20'
+    };
+
     const getStatusIcon = (status?: string, icon?: React.ReactNode) => {
       if (icon) return icon
       
@@ -208,21 +219,19 @@ const Timeline = forwardRef<HTMLDivElement, TimelineProps>(
       >
         {items.map((item, index) => (
           <motion.div
-            key={item.id}
+            key={index}
             className={cn(
               timelineItemVariants({ variant, orientation }),
-              interactive && "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg p-2 -m-2 transition-colors"
+              item.status && statusClasses[item.status]
             )}
-            initial={animated ? { opacity: 0, y: 20 } : {}}
+            initial={animated ? { opacity: 0, y: 20 } : undefined}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1, duration: 0.5 }}
-            onClick={() => {
-              if (item.onClick) {
-                item.onClick()
-              } else if (onItemClick) {
-                onItemClick(item, index)
-              }
+            transition={{ delay: index * 0.1 }}
+            style={{ 
+              zIndex: items.length - index,
+              cursor: interactive && onItemClick ? 'pointer' : 'default'
             }}
+            onClick={() => interactive && onItemClick && onItemClick(item, index)}
           >
             {/* Connector line */}
             {showConnector && index < items.length - 1 && (

@@ -323,7 +323,8 @@ const AccordionContent = forwardRef<HTMLDivElement, AccordionContentProps>(
               "overflow-hidden",
               className
             )}
-            {...props}
+            style={props.style}
+            data-state={isOpen ? "open" : "closed"}
           >
             <div className="p-4 pt-0">
               {children}

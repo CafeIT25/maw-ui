@@ -184,7 +184,7 @@ export const RichTextEditorDemo = () => {
                   variant={selectedVariant}
                   size={editorSize}
                   content={editorContent}
-                  onChange={setEditorContent}
+                  onContentChange={setEditorContent}
                   placeholder="Start writing your content here... 
 
 You can use:
@@ -197,9 +197,8 @@ Try the toolbar buttons above for more formatting options!"
                   showToolbar={true}
                   showStatusBar={true}
                   showWordCount={true}
-                  autoSave={false}
-                  spellCheck={true}
-                  maxLength={5000}
+                  autoSaveInterval={30000}
+                  maxLength={10000}
                 />
               </div>
 

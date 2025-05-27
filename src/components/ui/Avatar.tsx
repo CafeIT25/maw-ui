@@ -158,8 +158,8 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={editable ? onEdit : undefined}
+        style={props.style}
         {...motionProps}
-        {...props}
       >
         {loading ? (
           <div className="w-full h-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
@@ -271,7 +271,7 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({
           className="relative"
           style={{ zIndex: visibleChildren.length - index }}
         >
-          {React.cloneElement(child as React.ReactElement, {
+          {React.cloneElement(child as React.ReactElement<AvatarProps>, {
             size,
             border: 'thin'
           })}

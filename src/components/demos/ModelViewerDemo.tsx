@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
 import { 
   Box,
   RotateCcw,
@@ -17,40 +16,23 @@ import {
   Settings,
   Download,
   Share2,
-  Eye,
-  Layers,
-  Palette,
   Sun,
   Monitor,
-  Smartphone,
   Sparkles,
   Zap,
   Shield,
-  Code,
   CheckCircle,
-  Upload,
-  Grid3X3,
   Lightbulb,
-  MousePointer,
   RotateCw,
   Maximize2,
-  Minimize2,
-  Volume2,
-  VolumeX,
-  Gamepad2,
   Cpu,
   Globe,
-  Star,
-  Info,
-  Sliders,
-  Image,
-  Film,
-  Headphones
+  Sliders
 } from 'lucide-react';
 
 // 高度な3D Model Viewerコンポーネント（デモ用）
-interface ModelViewerProps {
-  modelUrl?: string;
+export interface ModelViewerProps {
+  modelUrl: string;
   width?: number | string;
   height?: number | string;
   autoRotate?: boolean;
@@ -70,7 +52,6 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   autoRotate = false,
   controls = true,
   environment = 'studio',
-  lighting = 'studio',
   variant = 'default',
   className = ''
 }) => {
@@ -267,10 +248,11 @@ export const ModelViewerDemo: React.FC = () => {
             {/* Main Viewer */}
             <div className="lg:col-span-2 space-y-4">
               <ModelViewer
+                modelUrl="/demo/cube.glb"
                 height={400}
                 autoRotate={viewerSettings.autoRotate}
                 environment={viewerSettings.environment}
-                lighting={viewerSettings.lighting as any}
+                lighting={viewerSettings.lighting as 'studio' | 'natural' | 'dramatic' | 'soft'}
                 variant="professional"
               />
               
@@ -444,6 +426,7 @@ export const ModelViewerDemo: React.FC = () => {
               >
                 <div className="aspect-square mb-3 relative">
                   <ModelViewer
+                    modelUrl="/demo/sample.glb"
                     height="100%"
                     autoRotate={true}
                     controls={false}

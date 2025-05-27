@@ -1,4 +1,5 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense } from 'react'
+import type { ComponentType } from 'react'
 import { 
   ComponentHeader, 
   DemoSection, 
@@ -13,25 +14,23 @@ import {
 } from '../../utils/components';
 import type { ComponentItem } from '../ComponentNavigation';
 
-// Dynamic imports for demo components - each component has its own dedicated demo
-const componentDemos = {
+// Dynamic imports for demo components
+const componentDemoMap: Record<string, ComponentType<Record<string, unknown>>> = {
   button: lazy(() => import('../demos/ButtonDemo').then(module => ({ default: module.default }))),
+  input: lazy(() => import('../demos/InputDemo').then(module => ({ default: module.default }))),
   card: lazy(() => import('../demos/CardDemo').then(module => ({ default: module.default }))),
-
-  select: lazy(() => import('../demos/SelectDemo').then(module => ({ default: module.default }))),
+  modal: lazy(() => import('../demos/ModalDemo').then(module => ({ default: module.default }))),
   tabs: lazy(() => import('../demos/TabsDemo').then(module => ({ default: module.default }))),
   accordion: lazy(() => import('../demos/AccordionDemo').then(module => ({ default: module.default }))),
-  modal: lazy(() => import('../demos/ModalDemo').then(module => ({ default: module.default }))),
-  alert: lazy(() => import('../demos/AlertDemo').then(module => ({ default: module.default }))),
-  badge: lazy(() => import('../demos/BadgeDemo').then(module => ({ default: module.default }))),
-  tooltip: lazy(() => import('../demos/TooltipDemo').then(module => ({ default: module.default }))),
-
   carousel: lazy(() => import('../demos/CarouselDemo').then(module => ({ default: module.default }))),
-
-  progress: lazy(() => import('../demos/ProgressDemo').then(module => ({ default: module.default }))),
+  datepicker: lazy(() => import('../demos/DatePickerDemo').then(module => ({ default: module.default }))),
+  select: lazy(() => import('../demos/SelectDemo').then(module => ({ default: module.default }))),
   slider: lazy(() => import('../demos/SliderDemo').then(module => ({ default: module.default }))),
+  progress: lazy(() => import('../demos/ProgressDemo').then(module => ({ default: module.default }))),
+  tooltip: lazy(() => import('../demos/TooltipDemo').then(module => ({ default: module.default }))),
+  alert: lazy(() => import('../demos/AlertDemo').then(module => ({ default: module.default }))),
   modelviewer: lazy(() => import('../demos/ModelViewerDemo').then(module => ({ default: module.default }))),
-};
+}
 
 export interface ComponentDetailPageProps {
   component: ComponentItem;
@@ -52,7 +51,7 @@ export const ComponentDetailPage: React.FC<ComponentDetailPageProps> = ({
   const usageExamples = getUsageExamples(component.id);
 
   // Get demo component
-  const DemoComponent = componentDemos[component.id as keyof typeof componentDemos];
+  const DemoComponent = componentDemoMap[component.id as keyof typeof componentDemoMap];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

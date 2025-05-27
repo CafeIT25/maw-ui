@@ -6,8 +6,8 @@ import { cn } from '../../lib/utils';
 interface PopoverContextType {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  triggerRef: React.RefObject<HTMLElement>;
-  contentRef: React.RefObject<HTMLDivElement>;
+  triggerRef: React.RefObject<HTMLElement | null>;
+  contentRef: React.RefObject<HTMLDivElement | null>;
 }
 
 const PopoverContext = createContext<PopoverContextType | undefined>(undefined);
@@ -55,74 +55,6 @@ export interface PopoverArrowProps {
   height?: number;
 }
 
-const PopoverRoot: React.FC<PopoverProps> = ({
-  children,
-  open,
-  onOpenChange,
-  defaultOpen = false,
-  modal = false,
-  className,
-}) => {
-  const [isOpen, setIsOpen] = useState(open ?? defaultOpen);
-  const triggerRef = useRef<HTMLElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  const currentOpen = open !== undefined ? open : isOpen;
-
-  const handleOpenChange = (newOpen: boolean) => {
-    if (open === undefined) {
-      setIsOpen(newOpen);
-    }
-    onOpenChange?.(newOpen);
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        currentOpen &&
-        triggerRef.current &&
-        contentRef.current &&
-        !triggerRef.current.contains(event.target as Node) &&
-        !contentRef.current.contains(event.target as Node)
-      ) {
-        handleOpenChange(false);
-      }
-    };
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && currentOpen) {
-        handleOpenChange(false);
-        triggerRef.current?.focus();
-      }
-    };
-
-    if (currentOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleEscape);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [currentOpen]);
-
-  return (
-    <PopoverContext.Provider
-      value={{
-        isOpen: currentOpen,
-        setIsOpen: handleOpenChange,
-        triggerRef,
-        contentRef,
-      }}
-    >
-      <div className={cn('relative inline-block', className)}>
-        {children}
-      </div>
-    </PopoverContext.Provider>
-  );
-};
-
 const PopoverTrigger: React.FC<PopoverTriggerProps> = ({
   children,
   className,
@@ -148,7 +80,7 @@ const PopoverTrigger: React.FC<PopoverTriggerProps> = ({
       onKeyDown: handleKeyDown,
       'aria-expanded': isOpen,
       'aria-haspopup': 'dialog',
-    } as any);
+    } as React.HTMLAttributes<HTMLElement>);
   }
 
   return (
@@ -180,11 +112,17 @@ const PopoverContent: React.FC<PopoverContentProps> = ({
   alignOffset = 0,
   avoidCollisions = true,
   collisionPadding = 8,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   hideWhenDetached = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   sticky = 'partial',
 }) => {
   const { isOpen, triggerRef, contentRef } = usePopoverContext();
   const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  // Acknowledge that these variables are intentionally unused
+  void hideWhenDetached;
+  void sticky;
 
   const variantClasses = {
     default: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg',
@@ -328,15 +266,86 @@ const PopoverArrow: React.FC<PopoverArrowProps> = ({
   );
 };
 
-// Compound component exports
-export const Popover = PopoverRoot as React.FC<PopoverProps> & {
-  Trigger: React.FC<PopoverTriggerProps>;
-  Content: React.FC<PopoverContentProps>;
-  Arrow: React.FC<PopoverArrowProps>;
+const PopoverRoot: React.FC<PopoverProps> = ({
+  children,
+  open,
+  onOpenChange,
+  defaultOpen = false,
+  modal = false,
+  className,
+}) => {
+  // Acknowledge that modal is intentionally unused
+  void modal;
+
+  const [isOpen, setIsOpen] = useState(open ?? defaultOpen);
+  const triggerRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const currentOpen = open !== undefined ? open : isOpen;
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (open === undefined) {
+      setIsOpen(newOpen);
+    }
+    onOpenChange?.(newOpen);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        currentOpen &&
+        triggerRef.current &&
+        contentRef.current &&
+        !triggerRef.current.contains(event.target as Node) &&
+        !contentRef.current.contains(event.target as Node)
+      ) {
+        handleOpenChange(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && currentOpen) {
+        handleOpenChange(false);
+        triggerRef.current?.focus();
+      }
+    };
+
+    if (currentOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [currentOpen]);
+
+  return (
+    <PopoverContext.Provider
+      value={{
+        isOpen: currentOpen,
+        setIsOpen: handleOpenChange,
+        triggerRef,
+        contentRef,
+      }}
+    >
+      <div className={cn('relative inline-block', className)}>
+        {children}
+      </div>
+    </PopoverContext.Provider>
+  );
 };
 
-Popover.Trigger = PopoverTrigger;
-Popover.Content = PopoverContent;
-Popover.Arrow = PopoverArrow;
+// Compound component exports with proper typing
+const PopoverWithSubComponents = PopoverRoot as typeof PopoverRoot & {
+  Trigger: typeof PopoverTrigger;
+  Content: typeof PopoverContent;
+  Arrow: typeof PopoverArrow;
+};
 
-export default Popover; 
+PopoverWithSubComponents.Trigger = PopoverTrigger;
+PopoverWithSubComponents.Content = PopoverContent;
+PopoverWithSubComponents.Arrow = PopoverArrow;
+
+export { PopoverWithSubComponents as Popover }; 

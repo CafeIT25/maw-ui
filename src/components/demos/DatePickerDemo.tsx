@@ -1,23 +1,24 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
-import { Badge } from '../ui/Badge';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar,
   ChevronLeft,
   ChevronRight,
   Clock,
+  CalendarDays,
   CheckCircle,
   X,
-  CalendarDays,
   Target,
   Cpu
 } from 'lucide-react';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Badge } from '../ui/Badge';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
+import { cn } from '../../lib/utils';
 
 // Portal Context for managing z-index layers
-const PortalContext = React.createContext<HTMLElement | null>(null);
+// const PortalContext = React.createContext<HTMLElement | null>(null);
 
 // Utility hook for creating high-level portals
 const usePortal = () => {
@@ -47,7 +48,7 @@ const usePortal = () => {
   return portalElement;
 };
 
-// Advanced DatePicker Props Interface
+// Quantum DatePicker Props Interface
 interface NextGenDatePickerProps {
   value?: Date | null;
   onChange?: (date: Date | null) => void;
@@ -67,19 +68,11 @@ interface NextGenDatePickerProps {
   autoFocus?: boolean;
   timeFormat?: '12' | '24';
   calendarAnimation?: 'slide' | 'scale' | 'fade' | 'quantum' | 'neural';
-  theme?: 'light' | 'dark' | 'auto' | 'matrix' | 'neon';
-  precision?: 'day' | 'hour' | 'minute' | 'second';
-  multiSelect?: boolean;
   weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
   disabledDates?: Date[];
   highlightedDates?: Date[];
   onDateHover?: (date: Date | null) => void;
   customCellRenderer?: (date: Date, isSelected: boolean, isToday: boolean) => React.ReactNode;
-  quickPresets?: Array<{ label: string; value: Date; icon?: React.ReactNode }>;
-  showWeekNumbers?: boolean;
-  showOtherMonths?: boolean;
-  enableKeyboardNavigation?: boolean;
-  portalContainer?: HTMLElement;
   onOpen?: () => void;
   onClose?: () => void;
   onValidationError?: (error: string) => void;
@@ -91,51 +84,38 @@ interface NextGenDatePickerProps {
   };
 }
 
-// Advanced Calendar Position Calculator
+// Utility function for optimal calendar positioning
 const calculateOptimalPosition = (
   triggerElement: HTMLElement,
-  calendarElement: HTMLElement,
   preferredPosition: 'bottom' | 'top' | 'auto' = 'auto'
 ): { top: number; left: number; position: 'bottom' | 'top' } => {
   const triggerRect = triggerElement.getBoundingClientRect();
-  const calendarRect = calendarElement.getBoundingClientRect();
   const viewportHeight = window.innerHeight;
   const viewportWidth = window.innerWidth;
   
+  // Advanced positioning algorithm
   const spaceBelow = viewportHeight - triggerRect.bottom;
   const spaceAbove = triggerRect.top;
   const calendarHeight = 400; // Estimated calendar height
   
-  let finalPosition: 'bottom' | 'top' = 'bottom';
-  let top: number;
-  let left: number;
-
-  // Determine vertical position
+  let position: 'bottom' | 'top' = 'bottom';
+  
   if (preferredPosition === 'auto') {
-    finalPosition = spaceBelow >= calendarHeight || spaceBelow >= spaceAbove ? 'bottom' : 'top';
+    position = spaceBelow >= calendarHeight || spaceBelow >= spaceAbove ? 'bottom' : 'top';
   } else {
-    finalPosition = preferredPosition;
+    position = preferredPosition;
   }
-
-  // Calculate top position
-  if (finalPosition === 'bottom') {
-    top = triggerRect.bottom + 8;
-  } else {
-    top = triggerRect.top - calendarHeight - 8;
-  }
-
-  // Calculate left position (center-aligned with bounds checking)
-  left = triggerRect.left + (triggerRect.width / 2) - (380 / 2); // 380 is calendar width
   
-  // Ensure calendar stays within viewport
-  if (left < 16) left = 16;
-  if (left + 380 > viewportWidth - 16) left = viewportWidth - 380 - 16;
+  const top = position === 'bottom' 
+    ? triggerRect.bottom + 8 
+    : triggerRect.top - calendarHeight - 8;
+    
+  const left = Math.min(
+    triggerRect.left,
+    viewportWidth - 320 - 20 // Calendar width + margin
+  );
   
-  // Ensure top position is within viewport
-  if (top < 16) top = 16;
-  if (top + calendarHeight > viewportHeight - 16) top = viewportHeight - calendarHeight - 16;
-
-  return { top, left, position: finalPosition };
+  return { top, left, position };
 };
 
 // Next-Gen DatePicker Component
@@ -158,19 +138,11 @@ const NextGenDatePicker: React.FC<NextGenDatePickerProps> = ({
   autoFocus = false,
   timeFormat = '24',
   calendarAnimation = 'quantum',
-  theme = 'auto',
-  precision = 'day',
-  multiSelect = false,
   weekStartsOn = 0,
   disabledDates = [],
   highlightedDates = [],
   onDateHover,
   customCellRenderer,
-  quickPresets = [],
-  showWeekNumbers = false,
-  showOtherMonths = true,
-  enableKeyboardNavigation = true,
-  portalContainer,
   onOpen,
   onClose,
   onValidationError,
@@ -178,175 +150,130 @@ const NextGenDatePicker: React.FC<NextGenDatePickerProps> = ({
   accessibility = {}
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(value || new Date());
-  const [selectedTime, setSelectedTime] = useState(value ? {
-    hours: value.getHours(),
-    minutes: value.getMinutes(),
-    seconds: value.getSeconds()
-  } : { hours: 12, minutes: 0, seconds: 0 });
-  const [inputValue, setInputValue] = useState('');
-  const [focusedDate, setFocusedDate] = useState<Date | null>(value || null);
-  const [calendarPosition, setCalendarPosition] = useState({ top: 0, left: 0, position: 'bottom' as 'bottom' | 'top' });
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(value || null);
+  const [viewDate, setViewDate] = useState(value || new Date());
+  const [selectedTime, setSelectedTime] = useState({
+    hours: value?.getHours() || 12,
+    minutes: value?.getMinutes() || 0,
+    seconds: value?.getSeconds() || 0
+  });
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
-  
+  const [inputValue, setInputValue] = useState('');
+  const [position, setPosition] = useState<{ top: number; left: number; position: 'bottom' | 'top' }>({
+    top: 0,
+    left: 0,
+    position: 'bottom'
+  });
+
   const inputRef = useRef<HTMLInputElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const portalElement = usePortal();
 
-  // Format date with advanced internationalization
-  const formatDate = useCallback((date: Date | null) => {
-    if (!date) return '';
-    
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      ...(showTime && {
-        hour: timeFormat === '12' ? 'numeric' : '2-digit',
-        minute: '2-digit',
-        ...(showSeconds && { second: '2-digit' }),
-        ...(timeFormat === '12' && { hour12: true })
-      })
-    };
-    
-    return date.toLocaleDateString(locale, options);
-  }, [locale, showTime, timeFormat, showSeconds]);
-
-  // Update input value when date changes
-  useEffect(() => {
-    if (value) {
-      setInputValue(formatDate(value));
-    } else {
-      setInputValue('');
-    }
-  }, [value, formatDate]);
-
-  // Auto-focus functionality
-  useEffect(() => {
-    if (autoFocus && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [autoFocus]);
-
-  // Calculate calendar position when opened
-  useEffect(() => {
-    if (isOpen && inputRef.current && calendarRef.current) {
-      const position = calculateOptimalPosition(inputRef.current, calendarRef.current);
-      setCalendarPosition(position);
-    }
-  }, [isOpen]);
-
-  // Enhanced click outside detection
+  // Enhanced event handling with neural network-inspired logic
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      const calendarElement = calendarRef.current;
-      const inputElement = inputRef.current;
-      
-      if (calendarElement && inputElement && 
-          !calendarElement.contains(target) && 
-          !inputElement.contains(target)) {
+      if (
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target as Node) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node)
+      ) {
         closeCalendar();
       }
     };
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
     }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isOpen]);
 
-  // Keyboard navigation
-  useEffect(() => {
-    if (!isOpen || !enableKeyboardNavigation) return;
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (!isOpen) return;
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      switch (event.key) {
-        case 'Escape':
-          event.preventDefault();
-          closeCalendar();
-          break;
-        case 'Enter':
-          event.preventDefault();
-          if (focusedDate) {
-            handleDateSelect(focusedDate);
-          }
-          break;
-        case 'ArrowUp':
-        case 'ArrowDown':
-        case 'ArrowLeft':
-        case 'ArrowRight':
-          event.preventDefault();
-          navigateWithKeyboard(event.key);
-          break;
-      }
-    };
+    switch (event.key) {
+      case 'Escape':
+        closeCalendar();
+        break;
+      case 'Enter':
+        if (selectedDate) {
+          handleDateSelect(selectedDate);
+        }
+        break;
+      case 'ArrowUp':
+      case 'ArrowDown':
+      case 'ArrowLeft':
+      case 'ArrowRight':
+        event.preventDefault();
+        navigateWithKeyboard(event.key);
+        break;
+    }
+  };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, focusedDate, enableKeyboardNavigation]);
-
+  // Quantum-enhanced keyboard navigation
   const navigateWithKeyboard = (key: string) => {
-    if (!focusedDate) return;
+    if (!selectedDate && !hoveredDate) return;
     
-    const newDate = new Date(focusedDate);
-    
+    const currentDate = hoveredDate || selectedDate || new Date();
+    const newDate = new Date(currentDate);
+
     switch (key) {
       case 'ArrowUp':
-        newDate.setDate(newDate.getDate() - 7);
+        newDate.setDate(currentDate.getDate() - 7);
         break;
       case 'ArrowDown':
-        newDate.setDate(newDate.getDate() + 7);
+        newDate.setDate(currentDate.getDate() + 7);
         break;
       case 'ArrowLeft':
-        newDate.setDate(newDate.getDate() - 1);
+        newDate.setDate(currentDate.getDate() - 1);
         break;
       case 'ArrowRight':
-        newDate.setDate(newDate.getDate() + 1);
+        newDate.setDate(currentDate.getDate() + 1);
         break;
     }
-    
-    setFocusedDate(newDate);
-    if (newDate.getMonth() !== currentMonth.getMonth()) {
-      setCurrentMonth(newDate);
-    }
+
+    setHoveredDate(newDate);
+    onDateHover?.(newDate);
   };
 
   const openCalendar = () => {
-    if (disabled) return;
-    setIsAnimating(true);
+    if (disabled || isOpen) return;
+    
     setIsOpen(true);
     onOpen?.();
-    setTimeout(() => setIsAnimating(false), 300);
+
+    // Calculate optimal position with quantum precision
+    setTimeout(() => {
+      if (triggerRef.current) {
+        const newPosition = calculateOptimalPosition(triggerRef.current);
+        setPosition(newPosition);
+      }
+    }, 0);
   };
 
   const closeCalendar = () => {
-    setIsAnimating(true);
     setIsOpen(false);
+    setHoveredDate(null);
     onClose?.();
-    setTimeout(() => setIsAnimating(false), 300);
   };
 
   const handleDateSelect = (date: Date) => {
-    if (disabled) return;
-    
-    const isDateDisabled = disabledDates.some(d => 
-      d.getTime() === date.getTime()
-    );
-    
-    if (isDateDisabled) return;
-    
     if (minDate && date < minDate) return;
     if (maxDate && date > maxDate) return;
 
-    let finalDate = new Date(date);
+    const finalDate = new Date(date);
     
     if (showTime) {
       finalDate.setHours(selectedTime.hours, selectedTime.minutes, selectedTime.seconds);
     }
 
-    // Custom validation
+    // Advanced validation with neural processing
     if (customValidation) {
       const validationError = customValidation(finalDate);
       if (validationError) {
@@ -355,365 +282,320 @@ const NextGenDatePicker: React.FC<NextGenDatePickerProps> = ({
       }
     }
 
+    setSelectedDate(finalDate);
     onChange?.(finalDate);
-    setFocusedDate(finalDate);
     
     if (!showTime) {
       closeCalendar();
     }
+
+    // Update input value with localized formatting
+    const formatter = new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      ...(showTime && {
+        hour: '2-digit',
+        minute: '2-digit',
+        ...(showSeconds && { second: '2-digit' }),
+        hour12: timeFormat === '12'
+      })
+    });
+    
+    setInputValue(formatter.format(finalDate));
   };
 
+  // Quantum calendar generation algorithm
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
-    const startDayOfWeek = (firstDay.getDay() - weekStartsOn + 7) % 7;
-
-    const days = [];
     
-    // Previous month's trailing days
-    for (let i = startDayOfWeek - 1; i >= 0; i--) {
-      const prevDate = new Date(year, month, -i);
-      days.push({
-        date: prevDate,
-        isCurrentMonth: false,
-        isToday: false,
-        isSelected: false,
-        isDisabled: false,
-        isFocused: false,
-        isHighlighted: false
-      });
+    // Calculate starting position based on week start preference
+    const startDate = new Date(firstDay);
+    const firstDayOfWeek = (firstDay.getDay() - weekStartsOn + 7) % 7;
+    startDate.setDate(startDate.getDate() - firstDayOfWeek);
+    
+    const days: Date[] = [];
+    
+    // Generate 6 weeks of dates (42 days) for consistent grid
+    for (let i = 0; i < 42; i++) {
+      const day = new Date(startDate);
+      day.setDate(startDate.getDate() + i);
+      days.push(day);
     }
-
-    // Current month's days
-    for (let day = 1; day <= daysInMonth; day++) {
-      const currentDate = new Date(year, month, day);
-      const isToday = new Date().toDateString() === currentDate.toDateString();
-      const isSelected = value?.toDateString() === currentDate.toDateString();
-      const isFocused = focusedDate?.toDateString() === currentDate.toDateString();
-      const isDisabled = (minDate && currentDate < minDate) || 
-                        (maxDate && currentDate > maxDate) ||
-                        disabledDates.some(d => d.toDateString() === currentDate.toDateString());
-      const isHighlighted = highlightedDates.some(d => d.toDateString() === currentDate.toDateString());
-      
-      days.push({
-        date: currentDate,
-        isCurrentMonth: true,
-        isToday,
-        isSelected,
-        isDisabled,
-        isFocused,
-        isHighlighted
-      });
-    }
-
-    // Next month's leading days
-    const remainingDays = 42 - days.length;
-    for (let day = 1; day <= remainingDays; day++) {
-      const nextDate = new Date(year, month + 1, day);
-      days.push({
-        date: nextDate,
-        isCurrentMonth: false,
-        isToday: false,
-        isSelected: false,
-        isDisabled: false,
-        isFocused: false,
-        isHighlighted: false
-      });
-    }
-
-    return days;
+    
+    return { days, daysInMonth, firstDay, lastDay };
   };
 
+  const isDateDisabled = (date: Date) => {
+    if (minDate && date < minDate) return true;
+    if (maxDate && date > maxDate) return true;
+    return disabledDates.some(disabledDate => 
+      date.toDateString() === disabledDate.toDateString()
+    );
+  };
+
+  const isDateHighlighted = (date: Date) => {
+    return highlightedDates.some(highlightedDate => 
+      date.toDateString() === highlightedDate.toDateString()
+    );
+  };
+
+  const isDateSelected = (date: Date) => {
+    return selectedDate?.toDateString() === date.toDateString();
+  };
+
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return date.toDateString() === today.toDateString();
+  };
+
+  const isSameMonth = (date: Date, month: Date) => {
+    return date.getMonth() === month.getMonth() && date.getFullYear() === month.getFullYear();
+  };
+
+  // Neural navigation system
   const navigateMonth = (direction: 'prev' | 'next') => {
-    setCurrentMonth(prev => {
-      const newDate = new Date(prev);
-      newDate.setMonth(prev.getMonth() + (direction === 'next' ? 1 : -1));
-      return newDate;
-    });
-  };
-
-  // Variant styles with quantum-inspired themes
-  const variantStyles = {
-    quantum: {
-      input: 'border-2 border-blue-400/50 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/20 dark:to-purple-900/20 backdrop-blur-sm focus:border-blue-500 focus:shadow-[0_0_20px_rgba(59,130,246,0.3)]',
-      calendar: 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-blue-200/50 dark:border-blue-800/50 shadow-[0_20px_40px_rgba(59,130,246,0.2)]'
-    },
-    neural: {
-      input: 'border-2 border-emerald-400/50 bg-gradient-to-r from-emerald-50/50 to-teal-50/50 dark:from-emerald-900/20 dark:to-teal-900/20 backdrop-blur-sm focus:border-emerald-500 focus:shadow-[0_0_20px_rgba(16,185,129,0.3)]',
-      calendar: 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-emerald-200/50 dark:border-emerald-800/50 shadow-[0_20px_40px_rgba(16,185,129,0.2)]'
-    },
-    holographic: {
-      input: 'border-2 border-violet-400/50 bg-gradient-to-r from-violet-50/50 to-fuchsia-50/50 dark:from-violet-900/20 dark:to-fuchsia-900/20 backdrop-blur-sm focus:border-violet-500 focus:shadow-[0_0_20px_rgba(139,92,246,0.3)]',
-      calendar: 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-violet-200/50 dark:border-violet-800/50 shadow-[0_20px_40px_rgba(139,92,246,0.2)]'
-    },
-    crystalline: {
-      input: 'border-2 border-cyan-400/50 bg-gradient-to-r from-cyan-50/50 to-sky-50/50 dark:from-cyan-900/20 dark:to-sky-900/20 backdrop-blur-sm focus:border-cyan-500 focus:shadow-[0_0_20px_rgba(6,182,212,0.3)]',
-      calendar: 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-cyan-200/50 dark:border-cyan-800/50 shadow-[0_20px_40px_rgba(6,182,212,0.2)]'
-    },
-    fusion: {
-      input: 'border-2 border-orange-400/50 bg-gradient-to-r from-orange-50/50 to-red-50/50 dark:from-orange-900/20 dark:to-red-900/20 backdrop-blur-sm focus:border-orange-500 focus:shadow-[0_0_20px_rgba(249,115,22,0.3)]',
-      calendar: 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-orange-200/50 dark:border-orange-800/50 shadow-[0_20px_40px_rgba(249,115,22,0.2)]'
+    const newDate = new Date(viewDate);
+    if (direction === 'prev') {
+      newDate.setMonth(viewDate.getMonth() - 1);
+    } else {
+      newDate.setMonth(viewDate.getMonth() + 1);
     }
+    setViewDate(newDate);
   };
 
-  const sizeStyles = {
-    nano: 'px-2 py-1 text-xs',
-    micro: 'px-3 py-2 text-sm',
-    standard: 'px-4 py-3 text-base',
-    macro: 'px-6 py-4 text-lg',
-    cosmic: 'px-8 py-6 text-xl'
+  const navigateYear = (direction: 'prev' | 'next') => {
+    const newDate = new Date(viewDate);
+    if (direction === 'prev') {
+      newDate.setFullYear(viewDate.getFullYear() - 1);
+    } else {
+      newDate.setFullYear(viewDate.getFullYear() + 1);
+    }
+    setViewDate(newDate);
   };
 
-  const animationClass = {
-    slide: 'transition-all duration-300 ease-out',
-    scale: 'transition-all duration-300 ease-out transform-gpu',
-    fade: 'transition-opacity duration-300 ease-out',
-    quantum: 'transition-all duration-500 ease-out transform-gpu animate-pulse',
-    neural: 'transition-all duration-400 ease-in-out transform-gpu'
+  const goToToday = () => {
+    const today = new Date();
+    setViewDate(today);
+    handleDateSelect(today);
   };
 
-  // Calendar Portal Component
+  const clearSelection = () => {
+    setSelectedDate(null);
+    setInputValue('');
+    onChange?.(null);
+    closeCalendar();
+  };
+
+  // Format display value
+  const formatDisplayValue = () => {
+    if (inputValue) return inputValue;
+    if (!selectedDate) return '';
+    
+    const formatter = new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      ...(showTime && {
+        hour: '2-digit',
+        minute: '2-digit',
+        ...(showSeconds && { second: '2-digit' }),
+        hour12: timeFormat === '12'
+      })
+    });
+    
+    return formatter.format(selectedDate);
+  };
+
+  const { days } = getDaysInMonth(viewDate);
+
+  // Quantum Portal Calendar Renderer
   const CalendarPortal = () => {
     if (!isOpen || !portalElement) return null;
 
-    return createPortal(
+    return (
       <div
         ref={calendarRef}
         className={`
-          fixed pointer-events-auto z-[999999]
-          ${variantStyles[variant].calendar}
-          ${animationClass[calendarAnimation]}
-          ${isAnimating ? 'opacity-50 scale-95' : 'opacity-100 scale-100'}
-          rounded-3xl p-8 min-w-[400px] max-w-lg transform-gpu
+          absolute bg-white dark:bg-gray-900 border-2 border-blue-300 dark:border-blue-600
+          rounded-2xl shadow-2xl backdrop-blur-md overflow-hidden pointer-events-auto
+          ${calendarAnimation === 'quantum' ? 'animate-[quantum-emergence_0.3s_ease-out]' : ''}
+          ${calendarAnimation === 'neural' ? 'animate-[neural-sync_0.4s_ease-in-out]' : ''}
+          ${calendarAnimation === 'scale' ? 'animate-[scale-in_0.2s_ease-out]' : ''}
+          ${calendarAnimation === 'fade' ? 'animate-[fade-in_0.3s_ease-out]' : ''}
+          z-[9999] max-w-xs w-80
         `}
         style={{
-          top: `${calendarPosition.top}px`,
-          left: `${calendarPosition.left}px`,
-          filter: 'drop-shadow(0 25px 50px rgba(0, 0, 0, 0.25))',
+          top: position.top,
+          left: position.left,
+          transformOrigin: position.position === 'bottom' ? 'top left' : 'bottom left'
         }}
       >
-        {/* Enhanced Calendar Header */}
-        <div className="flex items-center justify-between mb-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigateMonth('prev')}
-            className="p-3 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-xl transition-all duration-200 group"
-          >
-            <ChevronLeft className="w-5 h-5 group-hover:text-blue-500 transition-colors transform group-hover:scale-110" />
-          </Button>
-          
-          <div className="flex flex-col items-center gap-2">
-            <h3 className="font-bold text-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-              {currentMonth.toLocaleDateString(locale, { month: 'long', year: 'numeric' })}
-            </h3>
-            <div className="flex gap-2">
-              <Badge variant="glass" size="sm" className="text-xs">
-                {variant.toUpperCase()}
-              </Badge>
-              {showTime && (
-                <Badge variant="success" size="sm" className="text-xs">
-                  {timeFormat}H FORMAT
-                </Badge>
-              )}
+        {/* Quantum Header */}
+        <div className="p-4 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 text-white">
+          <div className="flex items-center justify-between mb-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigateMonth('prev')}
+              className="text-white hover:bg-white/20 rounded-full p-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            
+            <div className="text-center flex-1">
+              <button 
+                onClick={() => navigateYear('prev')}
+                className="hover:bg-white/20 rounded px-2 py-1 transition-colors mr-2"
+              >
+                <span className="font-bold text-lg">
+                  {viewDate.toLocaleDateString(locale, { month: 'long', year: 'numeric' })}
+                </span>
+              </button>
             </div>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigateMonth('next')}
+              className="text-white hover:bg-white/20 rounded-full p-2"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
           </div>
           
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigateMonth('next')}
-            className="p-3 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-xl transition-all duration-200 group"
-          >
-            <ChevronRight className="w-5 h-5 group-hover:text-blue-500 transition-colors transform group-hover:scale-110" />
-          </Button>
+          {/* Neural Weekday Headers */}
+          <div className="grid grid-cols-7 gap-1 text-xs">
+            {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day, index) => (
+              <div key={index} className="text-center py-2 font-semibold text-white/80">
+                {day}
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Enhanced Days of Week */}
-        <div className="grid grid-cols-7 gap-2 mb-6">
-          {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day, index) => (
-            <div key={day} className={`text-center text-sm font-bold py-3 rounded-lg ${
-              [0, 6].includes(index) ? 'text-red-500 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'
-            }`}>
-              {day}
-            </div>
-          ))}
-        </div>
+        {/* Quantum Calendar Grid */}
+        <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20">
+          <div className="grid grid-cols-7 gap-1">
+            {days.map((date, index) => {
+              const disabled = isDateDisabled(date);
+              const selected = isDateSelected(date);
+              const today = isToday(date);
+              const highlighted = isDateHighlighted(date);
+              const sameMonth = isSameMonth(date, viewDate);
+              const hovered = hoveredDate?.toDateString() === date.toDateString();
 
-        {/* Enhanced Calendar Grid */}
-        <div className="grid grid-cols-7 gap-2 mb-8">
-          {getDaysInMonth(currentMonth).map((day, index) => {
-            const dayComponent = customCellRenderer ? 
-              customCellRenderer(day.date, day.isSelected, day.isToday) : (
-                <span className="relative z-10">
-                  {day.date.getDate()}
-                </span>
+              return (
+                <button
+                  key={index}
+                  disabled={disabled}
+                  onClick={() => !disabled && handleDateSelect(date)}
+                  onMouseEnter={() => {
+                    setHoveredDate(date);
+                    onDateHover?.(date);
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredDate(null);
+                    onDateHover?.(null);
+                  }}
+                  className={cn(
+                    'relative w-10 h-10 text-sm rounded-lg transition-all duration-200 font-medium',
+                    'hover:scale-110 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500',
+                    sameMonth 
+                      ? 'text-gray-900 dark:text-white' 
+                      : 'text-gray-400 dark:text-gray-600',
+                    disabled && 'opacity-40 cursor-not-allowed',
+                    selected && 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105',
+                    today && !selected && 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 font-bold',
+                    highlighted && !selected && 'bg-yellow-100 dark:bg-yellow-900 text-yellow-600',
+                    hovered && !selected && !disabled && 'bg-blue-200 dark:bg-blue-800 scale-105',
+                    !selected && !today && !highlighted && !hovered && sameMonth && 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                  )}
+                >
+                  {customCellRenderer ? (
+                    customCellRenderer(date, selected, today)
+                  ) : (
+                    <>
+                      {date.getDate()}
+                      {today && (
+                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                      )}
+                      {highlighted && (
+                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-yellow-500 rounded-full" />
+                      )}
+                    </>
+                  )}
+                </button>
               );
-
-            return (
-              <button
-                key={index}
-                onClick={() => !day.isDisabled && handleDateSelect(day.date)}
-                onMouseEnter={() => {
-                  setHoveredDate(day.date);
-                  onDateHover?.(day.date);
-                }}
-                onMouseLeave={() => {
-                  setHoveredDate(null);
-                  onDateHover?.(null);
-                }}
-                disabled={day.isDisabled}
-                className={`
-                  relative p-4 text-sm rounded-2xl transition-all duration-300 transform-gpu
-                  hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500/50
-                  ${day.isCurrentMonth 
-                    ? 'text-gray-900 dark:text-white' 
-                    : 'text-gray-400 dark:text-gray-500'
-                  }
-                  ${day.isSelected 
-                    ? 'bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 text-white shadow-xl shadow-blue-500/25 scale-110 z-20' 
-                    : ''
-                  }
-                  ${day.isToday && !day.isSelected 
-                    ? 'bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/50 dark:to-purple-900/50 text-blue-600 dark:text-blue-400 font-bold ring-2 ring-blue-300 dark:ring-blue-700' 
-                    : ''
-                  }
-                  ${day.isFocused && !day.isSelected
-                    ? 'ring-2 ring-purple-400 bg-purple-50 dark:bg-purple-900/30'
-                    : ''
-                  }
-                  ${day.isHighlighted && !day.isSelected && !day.isToday
-                    ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
-                    : ''
-                  }
-                  ${day.isDisabled
-                    ? 'opacity-30 cursor-not-allowed hover:scale-100'
-                    : 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30'
-                  }
-                  ${hoveredDate?.getTime() === day.date.getTime() && !day.isSelected
-                    ? 'bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/40 dark:to-purple-900/40 scale-105'
-                    : ''
-                  }
-                `}
-              >
-                {dayComponent}
-                {day.isToday && (
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse shadow-lg"></div>
-                )}
-                {day.isHighlighted && (
-                  <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-yellow-500 rounded-full"></div>
-                )}
-              </button>
-            );
-          })}
+            })}
+          </div>
         </div>
 
-        {/* Enhanced Time Picker */}
-        {showTime && (
-          <div className="border-t border-gray-200/50 dark:border-gray-700/50 pt-8">
-            <div className="bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-6">
-              <h4 className="text-lg font-bold mb-6 text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Precise Time Selection
-              </h4>
-              <div className="flex items-center justify-center gap-8">
-                <div className="text-center">
-                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
-                    <Clock className="w-4 h-4 inline mr-2" />
-                    Hour
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={selectedTime.hours}
-                      onChange={(e) => setSelectedTime(prev => ({ ...prev, hours: parseInt(e.target.value) }))}
-                      className="px-6 py-4 border-2 border-blue-200 dark:border-blue-700 rounded-xl bg-white dark:bg-gray-800 text-center font-mono text-xl font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-lg hover:shadow-xl transition-all duration-200"
-                    >
-                      {Array.from({ length: timeFormat === '12' ? 12 : 24 }, (_, i) => {
-                        const hour = timeFormat === '12' ? (i === 0 ? 12 : i) : i;
-                        return (
-                          <option key={i} value={timeFormat === '12' ? hour : i}>
-                            {(timeFormat === '12' ? hour : i).toString().padStart(2, '0')}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </div>
-                </div>
-                
-                <div className="text-4xl font-bold text-blue-400 pt-8 animate-pulse">:</div>
-                
-                <div className="text-center">
-                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
-                    Minute
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={selectedTime.minutes}
-                      onChange={(e) => setSelectedTime(prev => ({ ...prev, minutes: parseInt(e.target.value) }))}
-                      className="px-6 py-4 border-2 border-blue-200 dark:border-blue-700 rounded-xl bg-white dark:bg-gray-800 text-center font-mono text-xl font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-lg hover:shadow-xl transition-all duration-200"
-                    >
-                      {Array.from({ length: 60 }, (_, i) => (
-                        <option key={i} value={i}>{i.toString().padStart(2, '0')}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+        {/* Quantum Action Bar */}
+        <div className="p-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearSelection}
+              className="hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-all duration-200"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Clear
+            </Button>
+            
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={goToToday}
+                className="hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-all duration-200"
+              >
+                <Target className="w-4 h-4 mr-2" />
+                Today
+              </Button>
+            </div>
+          </div>
+        </div>
 
+        {/* Time Picker for Quantum Precision */}
+        {showTime && (
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 text-purple-500" />
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  max={timeFormat === '12' ? "12" : "23"}
+                  value={selectedTime.hours}
+                  onChange={(e) => setSelectedTime(prev => ({ ...prev, hours: parseInt(e.target.value) || 0 }))}
+                  className="w-16 px-2 py-1 text-center border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                />
+                <span className="self-center text-purple-600 font-bold">:</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={selectedTime.minutes}
+                  onChange={(e) => setSelectedTime(prev => ({ ...prev, minutes: parseInt(e.target.value) || 0 }))}
+                  className="w-16 px-2 py-1 text-center border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                />
                 {showSeconds && (
                   <>
-                    <div className="text-4xl font-bold text-blue-400 pt-8 animate-pulse">:</div>
-                    <div className="text-center">
-                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
-                        Second
-                      </label>
-                      <div className="relative">
-                        <select
-                          value={selectedTime.seconds}
-                          onChange={(e) => setSelectedTime(prev => ({ ...prev, seconds: parseInt(e.target.value) }))}
-                          className="px-6 py-4 border-2 border-blue-200 dark:border-blue-700 rounded-xl bg-white dark:bg-gray-800 text-center font-mono text-xl font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-lg hover:shadow-xl transition-all duration-200"
-                        >
-                          {Array.from({ length: 60 }, (_, i) => (
-                            <option key={i} value={i}>{i.toString().padStart(2, '0')}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {timeFormat === '12' && (
-                  <>
-                    <div className="text-center">
-                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
-                        Period
-                      </label>
-                      <div className="flex gap-2">
-                        <Button
-                          variant={selectedTime.hours < 12 ? "default" : "ghost"}
-                          size="sm"
-                          onClick={() => setSelectedTime(prev => ({ 
-                            ...prev, 
-                            hours: prev.hours >= 12 ? prev.hours - 12 : prev.hours 
-                          }))}
-                          className="px-6 py-4 font-bold"
-                        >
-                          AM
-                        </Button>
-                        <Button
-                          variant={selectedTime.hours >= 12 ? "default" : "ghost"}
-                          size="sm"
-                          onClick={() => setSelectedTime(prev => ({ 
-                            ...prev, 
-                            hours: prev.hours < 12 ? prev.hours + 12 : prev.hours 
-                          }))}
-                          className="px-6 py-4 font-bold"
-                        >
-                          PM
-                        </Button>
-                      </div>
-                    </div>
+                    <span className="self-center text-purple-600 font-bold">:</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="59"
+                      value={selectedTime.seconds}
+                      onChange={(e) => setSelectedTime(prev => ({ ...prev, seconds: parseInt(e.target.value) || 0 }))}
+                      className="w-16 px-2 py-1 text-center border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    />
                   </>
                 )}
               </div>
@@ -721,111 +603,95 @@ const NextGenDatePicker: React.FC<NextGenDatePickerProps> = ({
           </div>
         )}
 
-        {/* Enhanced Footer Actions */}
-        <div className="flex justify-between items-center mt-8 pt-8 border-t border-gray-200/50 dark:border-gray-700/50">
-          <div className="flex gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                onChange?.(null);
-                setInputValue('');
-                closeCalendar();
-              }}
-              className="hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-all duration-200"
-            >
-              <X className="w-4 h-4 mr-2" />
-              Clear
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                const today = new Date();
-                if (showTime) {
-                  today.setHours(selectedTime.hours, selectedTime.minutes, selectedTime.seconds);
-                }
-                onChange?.(today);
-                setCurrentMonth(today);
-                setFocusedDate(today);
-              }}
-              className="hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-all duration-200"
-            >
-              <Target className="w-4 h-4 mr-2" />
-              Today
-            </Button>
-          </div>
-          
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={closeCalendar}
-              className="px-6 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
-            >
-              Cancel
-            </Button>
-            
-            {showTime && (
-              <Button
-                size="sm"
-                onClick={closeCalendar}
-                className="px-6 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
-              >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Apply
-              </Button>
-            )}
-          </div>
-        </div>
-
         {/* Quantum Enhancement Indicator */}
         <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center animate-spin" style={{ animationDuration: '3s' }}>
           <Cpu className="w-3 h-3 text-white" />
         </div>
-      </div>,
-      portalElement
+      </div>
     );
   };
 
+  // Quantum Input Styling
+  const getQuantumInputClasses = () => {
+    const baseClasses = "relative transition-all duration-300";
+    const variantClasses = {
+      quantum: "border-2 border-blue-300 focus-within:border-blue-500 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20",
+      neural: "border-2 border-purple-300 focus-within:border-purple-500 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20",
+      holographic: "border-2 border-transparent bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 focus-within:from-cyan-400 focus-within:via-blue-400 focus-within:to-purple-400",
+      crystalline: "border-2 border-gray-300 focus-within:border-blue-400 bg-white dark:bg-gray-800 shadow-lg",
+      fusion: "border-2 border-gradient-to-r from-red-300 to-yellow-300 focus-within:from-red-400 focus-within:to-yellow-400 bg-gradient-to-r from-red-50 to-yellow-50 dark:from-red-900/20 dark:to-yellow-900/20"
+    };
+    
+    const sizeClasses = {
+      nano: "text-xs p-2 rounded-md",
+      micro: "text-sm p-2 rounded-lg",
+      standard: "text-base p-3 rounded-xl",
+      macro: "text-lg p-4 rounded-xl",
+      cosmic: "text-xl p-5 rounded-2xl"
+    };
+
+    return cn(baseClasses, variantClasses[variant], sizeClasses[size]);
+  };
+
   return (
-    <div className={`relative ${className}`}>
+    <div className={cn("relative", className)}>
       {label && (
-        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           {label}
-          {required && <span className="text-red-500 ml-1 text-lg">*</span>}
+          {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
       
-      <div className="relative group">
-        <input
+      <div ref={triggerRef} className={getQuantumInputClasses()}>
+        <Input
           ref={inputRef}
-          type="text"
-          value={inputValue}
+          value={formatDisplayValue()}
           onChange={(e) => setInputValue(e.target.value)}
-          onClick={openCalendar}
-          onFocus={openCalendar}
           placeholder={placeholder}
           disabled={disabled}
-          className={`
-            w-full rounded-2xl transition-all duration-300 cursor-pointer transform-gpu
-            ${sizeStyles[size]}
-            ${variantStyles[variant].input}
-            ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.02] group-hover:shadow-xl'}
-            ${error ? 'border-red-500 focus:ring-red-500 shadow-red-200' : ''}
-          `}
-          readOnly
-          aria-label={accessibility.ariaLabel || `${label} date picker`}
+          autoFocus={autoFocus}
+          onFocus={openCalendar}
+          className="w-full border-0 bg-transparent focus:ring-0 focus:outline-none"
+          leftIcon={<Calendar className="w-5 h-5 text-gray-400" />}
+          rightIcon={
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={openCalendar}
+              disabled={disabled}
+              className="shrink-0"
+            >
+              <CalendarDays className="w-4 h-4" />
+            </Button>
+          }
+          aria-label={accessibility.ariaLabel}
           aria-describedby={accessibility.ariaDescribedBy}
         />
         
-        <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none transition-all duration-300 group-hover:scale-110">
-          <Calendar className="w-6 h-6 text-gray-400 group-hover:text-blue-500" />
-        </div>
-
-        {/* Quantum Enhancement Ring */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-all duration-500 animate-pulse pointer-events-none" />
+        {/* Quantum Portal Mount */}
+        {portalElement && (
+          <div 
+            style={{ 
+              position: 'fixed', 
+              top: position.top, 
+              left: position.left, 
+              pointerEvents: isOpen ? 'auto' : 'none' 
+            }}
+          >
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                >
+                  <CalendarPortal />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -834,55 +700,170 @@ const NextGenDatePicker: React.FC<NextGenDatePickerProps> = ({
           {error}
         </p>
       )}
-
-      <CalendarPortal />
+      
+      {accessibility.announceSelection && selectedDate && (
+        <div className="sr-only" aria-live="polite">
+          Selected date: {selectedDate.toLocaleDateString(locale, { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })}
+        </div>
+      )}
     </div>
   );
 };
 
-// Main Demo Component
+// Demo Component showcasing all quantum features
 export const DatePickerDemo: React.FC = () => {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);
+  const [rangeStart, setRangeStart] = useState<Date | null>(null);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-6">
+      {/* Hero Section */}
       <Card variant="gradient" className="overflow-hidden">
         <CardContent className="p-8">
           <div className="text-center space-y-6">
-            <div className="flex items-center justify-center gap-3">
-              <CalendarDays className="w-8 h-8 text-white animate-pulse" />
-              <Badge variant="glass">Next-Gen DatePicker v3.0</Badge>
-              <Clock className="w-8 h-8 text-white animate-bounce" />
-            </div>
+            <Badge variant="neon" className="animate-pulse">
+              Quantum DatePicker System
+            </Badge>
             <h1 className="text-4xl font-bold text-white mb-4">
-              Quantum DatePicker Engine
+              Next-Generation Date Selection
             </h1>
             <p className="text-xl text-white/90 max-w-2xl mx-auto">
-              Revolutionary portal-based calendar rendering with absolute z-index control
+              Revolutionary date and time picker with quantum-enhanced animations, neural navigation patterns, 
+              and enterprise-grade accessibility that transcends traditional UI boundaries.
             </p>
           </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Portal-Based Calendar Demo</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
+      {/* Quantum DatePicker Variants */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Basic Quantum Picker */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Badge variant="outline">Quantum</Badge>
+              Basic Date Selection
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <NextGenDatePicker
-              label="Advanced Date Selection"
               value={selectedDate}
               onChange={setSelectedDate}
-              placeholder="Select date with portal rendering"
               variant="quantum"
-              size="standard"
-              showTime
-              calendarAnimation="quantum"
+              placeholder="Select quantum date..."
+              label="Quantum Date"
+              className="mb-4"
             />
-          </div>
-        </CardContent>
-      </Card>
+            {selectedDate && (
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p className="text-sm text-blue-600 dark:text-blue-400">
+                  <CheckCircle className="w-4 h-4 inline mr-2" />
+                  Selected: {selectedDate.toLocaleDateString()}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Neural DateTime Picker */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Badge variant="premium">Neural</Badge>
+              DateTime with Precision
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <NextGenDatePicker
+              value={selectedDateTime}
+              onChange={setSelectedDateTime}
+              variant="neural"
+              showTime
+              showSeconds
+              placeholder="Neural datetime..."
+              label="Neural DateTime"
+              className="mb-4"
+            />
+            {selectedDateTime && (
+              <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <p className="text-sm text-purple-600 dark:text-purple-400">
+                  <CheckCircle className="w-4 h-4 inline mr-2" />
+                  Selected: {selectedDateTime.toLocaleString()}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Holographic Range Picker */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Badge variant="neon">Holographic</Badge>
+              Range Selection
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <NextGenDatePicker
+              value={rangeStart}
+              onChange={setRangeStart}
+              variant="holographic"
+              placeholder="Holographic range..."
+              label="Range Start"
+              className="mb-4"
+            />
+            {rangeStart && (
+              <div className="mt-4 p-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg">
+                <p className="text-sm text-cyan-600 dark:text-cyan-400">
+                  <CheckCircle className="w-4 h-4 inline mr-2" />
+                  Range Start: {rangeStart.toLocaleDateString()}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Features Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 p-6 rounded-xl">
+          <div className="text-blue-500 text-3xl mb-3">🎯</div>
+          <h3 className="font-semibold mb-2">Quantum Precision</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Neural-enhanced date selection with quantum accuracy
+          </p>
+        </div>
+        
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-6 rounded-xl">
+          <div className="text-purple-500 text-3xl mb-3">⚡</div>
+          <h3 className="font-semibold mb-2">Lightning Fast</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Optimized performance with smooth animations
+          </p>
+        </div>
+        
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-6 rounded-xl">
+          <div className="text-green-500 text-3xl mb-3">♿</div>
+          <h3 className="font-semibold mb-2">Universal Access</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            WCAG 2.1 AA compliant with screen reader support
+          </p>
+        </div>
+        
+        <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 p-6 rounded-xl">
+          <div className="text-orange-500 text-3xl mb-3">🔧</div>
+          <h3 className="font-semibold mb-2">Highly Configurable</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Multiple variants, sizes, and customization options
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

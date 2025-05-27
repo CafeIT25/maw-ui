@@ -212,7 +212,7 @@ const Carousel = forwardRef<HTMLDivElement, CarouselProps>(
       goToSlide(currentIndex - currentSlidesToScroll)
     }, [currentIndex, currentSlidesToScroll, goToSlide])
 
-    const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       if (!swipeable) return
 
       const threshold = 50
@@ -260,9 +260,9 @@ const Carousel = forwardRef<HTMLDivElement, CarouselProps>(
 
     const renderSlideContent = (item: CarouselItem, index: number) => {
       const isActive = effect !== 'slide' ? index === currentIndex : true
-      const isVisible = effect === 'slide' || index === currentIndex
+      const isVisible = index === currentIndex
 
-      if (!isVisible && effect !== 'slide') return null
+      if (!isVisible) return null
 
       const slideVariants = {
         slide: {},

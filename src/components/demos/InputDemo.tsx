@@ -46,7 +46,7 @@ export const InputDemo: React.FC = () => {
     bio: ''
   });
 
-  const [validationStates, setValidationStates] = useState<Record<string, boolean>>({});
+  const [validationStates] = useState<Record<string, boolean>>({});
   const [focusedField, setFocusedField] = useState<string>('');
   const [typingAnimation, setTypingAnimation] = useState('');
 
@@ -102,10 +102,6 @@ export const InputDemo: React.FC = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const handleValidation = useCallback((field: string, isValid: boolean) => {
-    setValidationStates(prev => ({ ...prev, [field]: isValid }));
-  }, []);
-
   const handleFieldFocus = useCallback((field: string) => {
     setFocusedField(field);
   }, []);
@@ -159,7 +155,6 @@ export const InputDemo: React.FC = () => {
                   placeholder="Enter your text..."
                   leftIcon={<User />}
                   variant="default"
-                  animated
                 />
               </div>
 
@@ -171,8 +166,7 @@ export const InputDemo: React.FC = () => {
                   type="email"
                   placeholder="your.email@company.com"
                   leftIcon={<Mail />}
-                  variant="outline"
-                  animated
+                  variant="outlined"
                 />
               </div>
 
@@ -185,7 +179,6 @@ export const InputDemo: React.FC = () => {
                   placeholder="+1 (555) 123-4567"
                   leftIcon={<Phone />}
                   variant="filled"
-                  animated
                 />
               </div>
 
@@ -197,9 +190,7 @@ export const InputDemo: React.FC = () => {
                   type="text"
                   label="Company Name"
                   leftIcon={<Building />}
-                  variant="floating"
-                  floatingLabel
-                  animated
+                  variant="default"
                 />
               </div>
             </div>
@@ -214,7 +205,6 @@ export const InputDemo: React.FC = () => {
                   placeholder="Cyberpunk mode activated..."
                   leftIcon={<Zap />}
                   variant="neon"
-                  animated
                 />
               </div>
 
@@ -228,7 +218,6 @@ export const InputDemo: React.FC = () => {
                     placeholder="Glass effect input..."
                     leftIcon={<Sparkles />}
                     variant="glass"
-                    animated
                   />
                 </div>
               </div>
@@ -242,7 +231,6 @@ export const InputDemo: React.FC = () => {
                   placeholder="Premium gradient style..."
                   leftIcon={<Palette />}
                   variant="gradient"
-                  animated
                 />
               </div>
 
@@ -254,8 +242,7 @@ export const InputDemo: React.FC = () => {
                   type="text"
                   placeholder="Luxury experience..."
                   leftIcon={<Star />}
-                  variant="premium"
-                  animated
+                  variant="default"
                 />
               </div>
             </div>
@@ -283,14 +270,7 @@ export const InputDemo: React.FC = () => {
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   leftIcon={<Mail />}
                   clearable
-                  validation={{
-                    required: true,
-                    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-                  }}
-                  onValidate={(isValid) => handleValidation('email', isValid)}
-                  state={validationStates.email === false ? 'invalid' : validationStates.email === true ? 'valid' : 'default'}
                   onFocus={() => handleFieldFocus('email')}
-                  animated
                 />
               </div>
 
@@ -302,15 +282,7 @@ export const InputDemo: React.FC = () => {
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   leftIcon={<Lock />}
-                  showPasswordToggle
-                  validation={{
-                    required: true,
-                    minLength: 8
-                  }}
-                  onValidate={(isValid) => handleValidation('password', isValid)}
-                  state={validationStates.password === false ? 'invalid' : validationStates.password === true ? 'valid' : 'default'}
                   onFocus={() => handleFieldFocus('password')}
-                  animated
                 />
               </div>
 
@@ -318,19 +290,11 @@ export const InputDemo: React.FC = () => {
                 <Input
                   type="password"
                   label="Confirm Password"
-                  placeholder="Confirm your password"
+                  placeholder="Repeat your password"
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                   leftIcon={<Shield />}
-                  showPasswordToggle
-                  validation={{
-                    required: true,
-                    validator: (value) => value === formData.password || 'Passwords do not match'
-                  }}
-                  onValidate={(isValid) => handleValidation('confirmPassword', isValid)}
-                  state={validationStates.confirmPassword === false ? 'invalid' : validationStates.confirmPassword === true ? 'valid' : 'default'}
                   onFocus={() => handleFieldFocus('confirmPassword')}
-                  animated
                 />
               </div>
 
@@ -342,14 +306,7 @@ export const InputDemo: React.FC = () => {
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   leftIcon={<Phone />}
-                  validation={{
-                    required: true,
-                    pattern: /^\+?[\d\s\-()]+$/
-                  }}
-                  onValidate={(isValid) => handleValidation('phone', isValid)}
-                  state={validationStates.phone === false ? 'invalid' : validationStates.phone === true ? 'valid' : 'default'}
                   onFocus={() => handleFieldFocus('phone')}
-                  animated
                 />
               </div>
             </div>
@@ -359,17 +316,11 @@ export const InputDemo: React.FC = () => {
                 <Input
                   type="url"
                   label="Website"
-                  placeholder="https://yourcompany.com"
+                  placeholder="https://yourwebsite.com"
                   value={formData.website}
                   onChange={(e) => handleInputChange('website', e.target.value)}
                   leftIcon={<Globe />}
-                  validation={{
-                    pattern: /^https?:\/\/[^\s/$.?#].[^\s]*$/
-                  }}
-                  onValidate={(isValid) => handleValidation('website', isValid)}
-                  state={validationStates.website === false ? 'invalid' : validationStates.website === true ? 'valid' : 'default'}
                   onFocus={() => handleFieldFocus('website')}
-                  animated
                 />
               </div>
 
@@ -382,7 +333,6 @@ export const InputDemo: React.FC = () => {
                   onChange={(e) => handleInputChange('amount', e.target.value)}
                   leftIcon={<DollarSign />}
                   onFocus={() => handleFieldFocus('amount')}
-                  animated
                 />
               </div>
 
@@ -397,7 +347,6 @@ export const InputDemo: React.FC = () => {
                   clearable
                   onFocus={() => handleFieldFocus('search')}
                   variant="neon"
-                  animated
                 />
               </div>
 
@@ -448,7 +397,6 @@ export const InputDemo: React.FC = () => {
                 placeholder="0.00"
                 leftIcon={<DollarSign />}
                 size="lg"
-                animated
               />
 
               <Input
@@ -456,16 +404,13 @@ export const InputDemo: React.FC = () => {
                 label="Interest Rate"
                 placeholder="5.25"
                 leftIcon={<Percent />}
-                animated
               />
 
               <Input
                 type="text"
-                label="Credit Card"
+                label="Credit Card Number"
                 placeholder="1234 5678 9012 3456"
                 leftIcon={<CreditCard />}
-                mask="#### #### #### ####"
-                animated
               />
             </div>
 
@@ -479,21 +424,18 @@ export const InputDemo: React.FC = () => {
                 type="date"
                 label="Birth Date"
                 leftIcon={<Calendar />}
-                animated
               />
 
               <Input
                 type="time"
                 label="Meeting Time"
                 leftIcon={<Calendar />}
-                animated
               />
 
               <Input
                 type="datetime-local"
                 label="Event DateTime"
                 leftIcon={<Calendar />}
-                animated
               />
             </div>
 
@@ -508,8 +450,6 @@ export const InputDemo: React.FC = () => {
                 label="Support Email"
                 placeholder="support@company.com"
                 leftIcon={<Headphones />}
-                copyable
-                animated
               />
 
               <Input
@@ -517,7 +457,6 @@ export const InputDemo: React.FC = () => {
                 label="Emergency Contact"
                 placeholder="+1 (911) 123-4567"
                 leftIcon={<Phone />}
-                animated
               />
 
               <Input
@@ -525,7 +464,6 @@ export const InputDemo: React.FC = () => {
                 label="Address"
                 placeholder="123 Main St, City, State"
                 leftIcon={<MapPin />}
-                animated
               />
             </div>
           </div>
@@ -551,27 +489,16 @@ export const InputDemo: React.FC = () => {
                 
                 <Input
                   type="password"
-                  label="Secure Password"
+                  label="Enterprise Password"
                   placeholder="Enter secure password"
                   leftIcon={<Lock />}
-                  showPasswordToggle
-                  validation={{
-                    required: true,
-                    minLength: 12,
-                    pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/
-                  }}
-                  description="Must contain uppercase, lowercase, number, and special character"
-                  animated
                 />
 
                 <Input
                   type="text"
-                  label="API Key"
+                  label="API Secret Key"
                   placeholder="sk-..."
                   leftIcon={<Zap />}
-                  copyable
-                  mask="********************"
-                  animated
                 />
               </div>
             </div>
@@ -584,16 +511,15 @@ export const InputDemo: React.FC = () => {
                 </h3>
                 
                 <Input
-                  type="search"
+                  type="text"
                   label="AI-Powered Search"
-                  placeholder="Search with natural language..."
+                  placeholder="Ask anything..."
                   leftIcon={<Search />}
                   rightIcon={<Sparkles className="w-4 h-4 text-purple-500 animate-pulse" />}
-                  variant="premium"
+                  variant="default"
                   size="lg"
                   clearable
                   loading={false}
-                  animated
                 />
 
                 <Input
@@ -602,7 +528,6 @@ export const InputDemo: React.FC = () => {
                   placeholder="Start typing for suggestions..."
                   leftIcon={<MessageSquare />}
                   variant="filled"
-                  animated
                 />
               </div>
             </div>
