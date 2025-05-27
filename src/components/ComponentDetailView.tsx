@@ -394,8 +394,8 @@ export function BasicModalExamples() {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Modal Variants</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {['default', 'neon', 'glass', 'premium'].map((variant) => (
-            <Button key={variant} variant={variant as any} size="sm">
+          {(['default', 'neon', 'glass', 'premium'] as const).map((variant) => (
+            <Button key={variant} variant={variant} size="sm">
               {variant.charAt(0).toUpperCase() + variant.slice(1)}
         </Button>
           ))}
@@ -845,9 +845,13 @@ export const ComponentDetailView: React.FC<ComponentDetailViewProps> = ({
       return prevColumns.map(column => ({
         ...column,
         cards: column.cards.map(card => 
-          card.id === updatedTask.id ? updatedTask : card
+          card.id === updatedTask.id ? {
+            ...updatedTask,
+            description: updatedTask.description || '',
+            progress: updatedTask.progress || 0
+          } : card
         )
-      }))
+      })) as typeof prevColumns
     })
     
     addToast({
@@ -900,20 +904,12 @@ export const ComponentDetailView: React.FC<ComponentDetailViewProps> = ({
     }
   };
 
-  const getViewportIcon = () => {
-    switch (viewport) {
-      case 'mobile': return <Smartphone className="w-4 h-4" />;
-      case 'tablet': return <Tablet className="w-4 h-4" />;
-      case 'desktop': return <Monitor className="w-4 h-4" />;
-    }
-  };
-
   const getViewportClass = () => {
-    switch (viewport) {
-      case 'mobile': return 'max-w-sm mx-auto';
-      case 'tablet': return 'max-w-2xl mx-auto';
-      case 'desktop': return 'w-full';
-    }
+    return {
+      desktop: 'w-full',
+      tablet: 'w-3/4 mx-auto',
+      mobile: 'w-1/2 mx-auto'
+    }[viewport];
   };
 
   // Demo component renderer
@@ -1187,8 +1183,8 @@ return (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Modal Variants</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {['default', 'neon', 'glass', 'premium'].map((variant) => (
-                  <Button key={variant} variant={variant as any} size="sm">
+                {(['default', 'neon', 'glass', 'premium'] as const).map((variant) => (
+                  <Button key={variant} variant={variant} size="sm">
                     {variant.charAt(0).toUpperCase() + variant.slice(1)}
                   </Button>
           ))}
@@ -2066,11 +2062,11 @@ return (
                       <div className="flex items-center space-x-3">
                         <Avatar 
                           fallback={user.name.split(' ').map(n => n[0]).join('')}
-                          variant={user.variant as any}
+                          variant={user.variant as "primary" | "success" | "premium" | "neon" | "warning" | "glass"}
                           showStatus
-                          status={user.status as any}
-                  size="lg"
-                />
+                          status={user.status as "online" | "away" | "busy" | "offline"}
+                          size="lg"
+                        />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-900 dark:text-white truncate">
                             {user.name}
@@ -2856,7 +2852,7 @@ return (
                         const newColumns = [...prevColumns]
                         
                         // Find the card and remove it from source column
-                        let movedCard: any = null
+                        let movedCard: KanbanCard | null = null
                         const sourceColumnIndex = newColumns.findIndex(col => col.id === fromColumn)
                         if (sourceColumnIndex !== -1) {
                           const cardIndex = newColumns[sourceColumnIndex].cards.findIndex(card => card.id === cardId)
@@ -2873,9 +2869,25 @@ return (
                         if (movedCard) {
                           const targetColumnIndex = newColumns.findIndex(col => col.id === toColumn)
                           if (targetColumnIndex !== -1) {
+                            // Ensure the moved card has all required properties
+                            const completeCard = {
+                              ...movedCard,
+                              description: movedCard.description || '',
+                              assignee: {
+                                name: movedCard.assignee?.name || 'Unassigned',
+                                avatar: movedCard.assignee?.avatar || 'U'
+                              },
+                              dueDate: movedCard.dueDate || new Date(),
+                              priority: (movedCard.priority as "low" | "medium" | "high" | "urgent") || 'medium',
+                              tags: movedCard.tags || [],
+                              attachments: movedCard.attachments || 0,
+                              comments: movedCard.comments || 0,
+                              status: movedCard.status || 'pending',
+                              progress: movedCard.progress || 0
+                            };
                             newColumns[targetColumnIndex] = {
                               ...newColumns[targetColumnIndex],
-                              cards: [...newColumns[targetColumnIndex].cards, movedCard]
+                              cards: [...newColumns[targetColumnIndex].cards, completeCard as any]
                             }
                           }
                         }
@@ -3375,7 +3387,7 @@ return (
                       onClick={() => addToast({
                         title: formData.name || 'Custom Toast',
                         description: formData.message || 'This is a custom toast notification',
-                        type: (formData.email as any) || 'info',
+                        type: (formData.email as "success" | "info" | "warning" | "error") || 'info',
                         duration: formData.message === '0' ? 0 : parseInt(formData.message || '5') * 1000
                       })}
                       className="min-w-[120px]"
@@ -4053,7 +4065,9 @@ return (
           <div className="flex items-center gap-6">
             {component.icon && (
               <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/50 dark:to-purple-900/50">
-                {React.cloneElement(component.icon as React.ReactElement, { className: 'w-8 h-8' })}
+                {React.isValidElement(component.icon) 
+                  ? React.cloneElement(component.icon as React.ReactElement<{ className?: string }>, { className: 'w-8 h-8' })
+                  : component.icon}
               </div>
             )}
             

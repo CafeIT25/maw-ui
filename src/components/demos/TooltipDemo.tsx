@@ -33,11 +33,12 @@ import {
 } from 'lucide-react';
 
 export const TooltipDemo: React.FC = () => {
-  const [tooltipPosition, setTooltipPosition] = useState('top');
-  const [tooltipDelay, setTooltipDelay] = useState(0);
-
   // Simple tooltip implementation for demo purposes
-  const SimpleTooltip = ({ children, content, position = 'top' }: any) => {
+  const SimpleTooltip = ({ children, content, position = 'top' }: {
+    children: React.ReactNode;
+    content: string;
+    position?: string;
+  }) => {
     const [isVisible, setIsVisible] = useState(false);
     
     return (

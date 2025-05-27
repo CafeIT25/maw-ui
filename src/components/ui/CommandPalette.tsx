@@ -311,17 +311,15 @@ const CommandPalette = forwardRef<HTMLDivElement, CommandPaletteProps>(
       <AnimatePresence>
         <motion.div
           ref={ref}
-          className={cn(commandPaletteVariants({ variant, className }))}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              onOpenChange(false)
-            }
-          }}
-          {...props}
+          className={cn(
+            commandPaletteVariants({ variant }),
+            className
+          )}
+          initial={{ opacity: 0, scale: 0.95, y: -20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: -20 }}
+          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          style={props.style}
         >
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />

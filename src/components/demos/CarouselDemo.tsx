@@ -501,7 +501,6 @@ export const CarouselDemo: React.FC = () => {
                 )
               }))}
               perspective={1200}
-              rotateY={35}
               depth={300}
               variant="glass"
               size="lg"

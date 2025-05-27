@@ -4,7 +4,7 @@ import {
   X, Save, Tag, 
   FileText, Paperclip, 
   Upload, Image, File, Check, Trash2,
-  Flag, Activity, TrendingUp
+  Flag, Activity
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { Button } from './Button'
@@ -137,7 +137,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
       open={open} 
       onOpenChange={onOpenChange}
       size="xl"
-      variant={variant}
+      variant={variant === 'premium' ? 'default' : variant}
       className="max-h-[90vh]"
     >
       <div className="flex flex-col max-h-[80vh]">
@@ -156,7 +156,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
               {task.priority && (
                 <Badge 
                   variant={
-                    task.priority === 'urgent' ? 'destructive' :
+                    task.priority === 'urgent' ? 'error' :
                     task.priority === 'high' ? 'warning' :
                     task.priority === 'medium' ? 'default' : 'secondary'
                   }
@@ -212,7 +212,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Enter task title..."
                     className="w-full"
-                    variant="premium"
+                    variant="default"
                   />
                 </div>
 

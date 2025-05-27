@@ -26,7 +26,7 @@ export const CodeExamplesSection: React.FC<CodeExamplesSectionProps> = ({
     ? examples 
     : examples.filter(ex => ex.category === selectedCategory);
 
-  const handleCodeCopy = (code: string, title?: string) => {
+  const handleCodeCopy = (title?: string) => {
     setShowCopyToast(true);
     setTimeout(() => setShowCopyToast(false), 2000);
     console.log(`Copied ${title || 'code'} to clipboard`);

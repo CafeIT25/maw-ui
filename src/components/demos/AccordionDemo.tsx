@@ -138,7 +138,7 @@ export const AccordionDemo: React.FC = () => {
   );
 
   // Handler for multi-expand accordion
-  const handleMultiToggle = useCallback((accordionState: string[], setAccordion: React.Dispatch<React.SetStateAction<string[]>>) => 
+  const handleMultiToggle = useCallback((setAccordion: React.Dispatch<React.SetStateAction<string[]>>) => 
     (id: string) => {
       setAccordion((prev: string[]) => 
         prev.includes(id) 
@@ -156,188 +156,6 @@ export const AccordionDemo: React.FC = () => {
     notifications: true,
     plan: 'pro'
   });
-
-  const faqData = [
-    {
-      id: 'getting-started',
-      question: 'How do I get started with the component library?',
-      answer: 'Begin by installing the library via npm or yarn, then import the components you need. Check our quick start guide for detailed setup instructions.',
-      category: 'Getting Started'
-    },
-    {
-      id: 'customization',
-      question: 'Can I customize the component styles?',
-      answer: 'Yes! Our components are built with Tailwind CSS and support custom themes. You can override styles, create custom variants, and use CSS variables for theming.',
-      category: 'Customization'
-    },
-    {
-      id: 'typescript',
-      question: 'Does the library support TypeScript?',
-      answer: 'Absolutely! The entire library is written in TypeScript with full type definitions. You\'ll get complete IntelliSense support and type safety.',
-      category: 'Development'
-    },
-    {
-      id: 'accessibility',
-      question: 'Are the components accessible?',
-      answer: 'Yes, all components follow WCAG 2.1 guidelines and include proper ARIA attributes, keyboard navigation, and screen reader support.',
-      category: 'Accessibility'
-    },
-    {
-      id: 'performance',
-      question: 'How is the performance optimized?',
-      answer: 'Components use lazy loading, code splitting, memoization, and are optimized for bundle size. We also provide tree-shaking support.',
-      category: 'Performance'
-    }
-  ];
-
-  const settingsData = [
-    {
-      id: 'profile',
-      title: 'Profile Settings',
-      icon: <User className="w-5 h-5" />,
-      content: {
-        description: 'Manage your personal information and preferences',
-        options: [
-          { label: 'Display Name', value: 'John Doe', type: 'text' },
-          { label: 'Email Address', value: 'john@example.com', type: 'email' },
-          { label: 'Time Zone', value: 'UTC-5 (EST)', type: 'select' },
-          { label: 'Language', value: 'English', type: 'select' }
-        ]
-      }
-    },
-    {
-      id: 'security',
-      title: 'Security & Privacy',
-      icon: <Shield className="w-5 h-5" />,
-      content: {
-        description: 'Configure security settings and privacy options',
-        options: [
-          { label: 'Two-Factor Authentication', value: 'Enabled', type: 'toggle' },
-          { label: 'Login Notifications', value: 'Enabled', type: 'toggle' },
-          { label: 'Data Sharing', value: 'Disabled', type: 'toggle' },
-          { label: 'Session Timeout', value: '30 minutes', type: 'select' }
-        ]
-      }
-    },
-    {
-      id: 'billing',
-      title: 'Billing & Subscription',
-      icon: <CreditCard className="w-5 h-5" />,
-      content: {
-        description: 'Manage your subscription and payment methods',
-        options: [
-          { label: 'Current Plan', value: 'Pro Plan', type: 'text' },
-          { label: 'Billing Cycle', value: 'Monthly', type: 'select' },
-          { label: 'Payment Method', value: '**** 1234', type: 'text' },
-          { label: 'Auto Renewal', value: 'Enabled', type: 'toggle' }
-        ]
-      }
-    },
-    {
-      id: 'notifications',
-      title: 'Notifications',
-      icon: <Monitor className="w-5 h-5" />,
-      content: {
-        description: 'Customize how and when you receive notifications',
-        options: [
-          { label: 'Email Notifications', value: 'Enabled', type: 'toggle' },
-          { label: 'Push Notifications', value: 'Enabled', type: 'toggle' },
-          { label: 'SMS Notifications', value: 'Disabled', type: 'toggle' },
-          { label: 'Marketing Emails', value: 'Disabled', type: 'toggle' }
-        ]
-      }
-    }
-  ];
-
-  const documentationSections = [
-    {
-      id: 'installation',
-      title: 'Installation & Setup',
-      icon: <Download className="w-5 h-5" />,
-      badge: 'Essential',
-      content: `
-# Installation
-
-Install the library using your preferred package manager:
-
-\`\`\`bash
-npm install @maw-ui/components
-# or
-yarn add @maw-ui/components
-# or
-pnpm add @maw-ui/components
-\`\`\`
-
-Then import the components in your application:
-
-\`\`\`jsx
-import { Button, Card, Input } from '@maw-ui/components';
-import '@maw-ui/components/dist/styles.css';
-\`\`\`
-      `
-    },
-    {
-      id: 'theming',
-      title: 'Theming System',
-      icon: <Sparkles className="w-5 h-5" />,
-      badge: 'Advanced',
-      content: `
-# Custom Theming
-
-Our theming system is built on CSS variables and Tailwind CSS:
-
-\`\`\`css
-:root {
-  --primary: 220 100% 50%;
-  --secondary: 210 40% 40%;
-  --accent: 280 100% 70%;
-  --background: 0 0% 100%;
-}
-\`\`\`
-
-Apply themes using the theme provider:
-
-\`\`\`jsx
-<ThemeProvider theme="dark">
-  <App />
-</ThemeProvider>
-\`\`\`
-      `
-    },
-    {
-      id: 'components',
-      title: 'Component API',
-      icon: <Code className="w-5 h-5" />,
-      badge: 'Reference',
-      content: `
-# Component API Reference
-
-Each component accepts a standard set of props:
-
-\`\`\`typescript
-interface ComponentProps {
-  variant?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  disabled?: boolean;
-  className?: string;
-  children?: React.ReactNode;
-}
-\`\`\`
-
-Example usage:
-
-\`\`\`jsx
-<Button 
-  variant="primary" 
-  size="lg"
-  onClick={handleClick}
->
-  Click me
-</Button>
-\`\`\`
-      `
-    }
-  ];
 
   return (
     <div className="space-y-8">
@@ -502,7 +320,8 @@ function MyComponent() {
       variant="outlined"
       size="lg"
     />
-  );}`}</code>
+  );
+}`}</code>
                   </pre>
                 </div>
               </div>
@@ -525,7 +344,7 @@ function MyComponent() {
               id="features"
               title="Interactive Features"
               isOpen={multiAccordion.includes('features')}
-              onToggle={handleMultiToggle(multiAccordion, setMultiAccordion)}
+              onToggle={handleMultiToggle(setMultiAccordion)}
               icon={<Sparkles className="w-5 h-5" />}
               variant="outlined"
             >
@@ -545,7 +364,7 @@ function MyComponent() {
               id="performance"
               title="Performance Optimization"
               isOpen={multiAccordion.includes('performance')}
-              onToggle={handleMultiToggle(multiAccordion, setMultiAccordion)}
+              onToggle={handleMultiToggle(setMultiAccordion)}
               icon={<Zap className="w-5 h-5" />}
               variant="outlined"
             >
@@ -577,7 +396,7 @@ function MyComponent() {
               id="accessibility"
               title="Accessibility Standards"
               isOpen={multiAccordion.includes('accessibility')}
-              onToggle={handleMultiToggle(multiAccordion, setMultiAccordion)}
+              onToggle={handleMultiToggle(setMultiAccordion)}
               icon={<Shield className="w-5 h-5" />}
               variant="outlined"
             >
@@ -773,7 +592,7 @@ function MyComponent() {
               id="profile-settings"
               title="Profile & Account"
               isOpen={settingsAccordion.includes('profile-settings')}
-              onToggle={handleMultiToggle(settingsAccordion, setSettingsAccordion)}
+              onToggle={handleMultiToggle(setSettingsAccordion)}
               icon={<User className="w-5 h-5" />}
               size="lg"
             >
@@ -829,7 +648,7 @@ function MyComponent() {
               id="security-settings"
               title="Security & Privacy"
               isOpen={settingsAccordion.includes('security-settings')}
-              onToggle={handleMultiToggle(settingsAccordion, setSettingsAccordion)}
+              onToggle={handleMultiToggle(setSettingsAccordion)}
               icon={<Shield className="w-5 h-5" />}
               size="lg"
             >
@@ -909,7 +728,7 @@ function MyComponent() {
               id="billing-settings"
               title="Billing & Subscription"
               isOpen={settingsAccordion.includes('billing-settings')}
-              onToggle={handleMultiToggle(settingsAccordion, setSettingsAccordion)}
+              onToggle={handleMultiToggle(setSettingsAccordion)}
               icon={<CreditCard className="w-5 h-5" />}
               size="lg"
             >

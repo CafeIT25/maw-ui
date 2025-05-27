@@ -4,14 +4,11 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../lib/utils';
 import {
   BarChart3,
-  LineChart,
-  PieChart,
+  LineChart as LineChartIcon,
+  PieChart as PieChartIcon,
   TrendingUp,
   TrendingDown,
   Activity,
-  Zap,
-  Brain,
-  Eye,
   Download,
   Share2,
   Settings,
@@ -19,29 +16,12 @@ import {
   Minimize2,
   Play,
   Pause,
-  RotateCcw,
-  Filter,
-  Search,
-  Calendar,
-  Clock,
-  Users,
-  DollarSign,
-  ShoppingCart,
-  Target,
-  Award,
-  Sparkles,
-  Layers,
-  Grid3X3,
-  MoreHorizontal,
-  ChevronUp,
-  ChevronDown,
-  Info,
+  Brain,
   AlertTriangle,
-  CheckCircle,
-  XCircle,
   ArrowUpRight,
   ArrowDownRight,
-  Minus
+  Minus,
+  Sparkles
 } from 'lucide-react';
 import { Button } from './Button';
 import { Card, CardHeader, CardTitle, CardContent } from './Card';
@@ -55,7 +35,7 @@ export interface DataPoint {
   value: number;
   timestamp?: Date;
   category?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   color?: string;
   trend?: 'up' | 'down' | 'stable';
   change?: number;
@@ -155,7 +135,7 @@ export interface TableConfig {
     format?: string;
     sortable?: boolean;
   }>;
-  data: Array<Record<string, any>>;
+  data: Array<Record<string, unknown>>;
   pagination?: boolean;
   search?: boolean;
   export?: boolean;
@@ -178,7 +158,7 @@ export interface ImageConfig {
 export interface AdvancedDataVizProps extends VariantProps<typeof vizVariants> {
   config: ChartConfig | DashboardWidget[];
   className?: string;
-  onDataUpdate?: (data: any) => void;
+  onDataUpdate?: (data: unknown) => void;
   onInsight?: (insight: string) => void;
   realtime?: boolean;
   interactive?: boolean;
@@ -342,11 +322,9 @@ const Chart: React.FC<{
   config: ChartConfig;
   data: DataPoint[];
   className?: string;
-  onDataUpdate?: (data: any) => void;
-}> = ({ config, data, className, onDataUpdate }) => {
+}> = ({ config, data, className }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedPoint, setSelectedPoint] = useState<DataPoint | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Simple canvas-based chart rendering
   useEffect(() => {
@@ -493,7 +471,6 @@ const Chart: React.FC<{
           if (!rect) return;
           
           const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
           
           // Find closest data point (simplified)
           const pointIndex = Math.round((x - 40) / ((rect.width - 80) / (data.length - 1)));
@@ -633,7 +610,7 @@ const AIInsightsPanel: React.FC<{
           <div>
             <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">Predictions</h4>
             <div className="space-y-2">
-              {predictions.map((prediction, index) => (
+              {predictions.map((prediction) => (
                 <div key={prediction.id} className="flex items-center justify-between text-sm">
                   <span>{prediction.label}</span>
                   <Badge variant="outline">{prediction.value.toLocaleString()}</Badge>
@@ -669,9 +646,7 @@ export const AdvancedDataViz: React.FC<AdvancedDataVizProps> = ({
   size,
   className,
   onDataUpdate,
-  onInsight,
   realtime = false,
-  interactive = true,
   ai = false
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -759,7 +734,6 @@ export const AdvancedDataViz: React.FC<AdvancedDataVizProps> = ({
                     <Chart
                       config={widget.config as ChartConfig}
                       data={generateMockData('chart', 10)}
-                      onDataUpdate={onDataUpdate}
                     />
                   </CardContent>
                 </Card>
@@ -780,9 +754,9 @@ export const AdvancedDataViz: React.FC<AdvancedDataVizProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                {chartConfig.type === 'line' && <LineChart className="w-5 h-5" />}
+                {chartConfig.type === 'line' && <LineChartIcon className="w-5 h-5" />}
                 {chartConfig.type === 'bar' && <BarChart3 className="w-5 h-5" />}
-                {chartConfig.type === 'pie' && <PieChart className="w-5 h-5" />}
+                {chartConfig.type === 'pie' && <PieChartIcon className="w-5 h-5" />}
                 {chartConfig.title}
                 {realtime && (
                   <Badge variant={isPlaying ? "success" : "outline"} size="sm">
@@ -896,7 +870,6 @@ export const AdvancedDataViz: React.FC<AdvancedDataVizProps> = ({
               <Chart
                 config={chartConfig}
                 data={currentData}
-                onDataUpdate={onDataUpdate}
                 className="h-full"
               />
             </div>

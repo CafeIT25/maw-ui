@@ -7,8 +7,8 @@ import { ChevronDown, Check } from 'lucide-react';
 interface DropdownContextType {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  triggerRef: React.RefObject<HTMLButtonElement>;
-  contentRef: React.RefObject<HTMLDivElement>;
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
+  contentRef: React.RefObject<HTMLDivElement | null>;
 }
 
 const DropdownContext = createContext<DropdownContextType | undefined>(undefined);
@@ -80,6 +80,8 @@ const DropdownRoot: React.FC<DropdownProps> = ({
   modal = true,
   className,
 }) => {
+  // Acknowledge that modal is intentionally unused
+  void modal;
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -184,7 +186,7 @@ const DropdownTrigger: React.FC<DropdownTriggerProps> = ({
       'aria-expanded': isOpen,
       'aria-haspopup': 'menu',
       disabled,
-    });
+    } as React.HTMLAttributes<HTMLElement>);
   }
 
   return (
@@ -220,14 +222,19 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
   className,
   variant = 'default',
   side = 'bottom',
-  align = 'start',
+  align = 'center',
   sideOffset = 4,
   alignOffset = 0,
   avoidCollisions = true,
   collisionPadding = 8,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   sticky = 'partial',
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   hideWhenDetached = false,
 }) => {
+  // Acknowledge that these variables are intentionally unused
+  void sticky;
+  void hideWhenDetached;
   const { isOpen, triggerRef, contentRef } = useDropdownContext();
   const [position, setPosition] = useState({ x: 0, y: 0 });
 

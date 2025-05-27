@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   RotateCcw, 
   Download, 
-  Eye, 
-  EyeOff, 
   Maximize2, 
   Minimize2,
   Layers,
@@ -12,12 +10,8 @@ import {
   Moon,
   Play,
   Pause,
-  SkipBack,
-  SkipForward,
-  Settings,
   Camera,
   Smartphone,
-  Monitor,
   Zap,
   Info,
   Brain,
@@ -47,27 +41,31 @@ export interface ModelViewer3DProps {
   showGrid?: boolean;
   showAxes?: boolean;
   enableAR?: boolean;
-  enableVR?: boolean;
   enableCollaboration?: boolean;
   enableAI?: boolean;
   background?: 'transparent' | 'gradient' | 'environment' | 'color';
   backgroundColor?: string;
-  environmentUrl?: string;
-  lighting?: 'studio' | 'outdoor' | 'indoor' | 'custom';
   animations?: string[];
   materials?: string[];
   quality?: 'low' | 'medium' | 'high' | 'ultra';
   enterpriseMode?: boolean;
   securityLevel?: 'basic' | 'enterprise' | 'government';
-  onLoad?: (model: any) => void;
+  onLoad?: (model: Record<string, unknown>) => void;
   onError?: (error: Error) => void;
   onProgress?: (progress: number) => void;
   onAnimationChange?: (animation: string) => void;
-  onCollaboration?: (event: 'annotation' | 'comment' | 'measurement', data: any) => void;
-  onAIAnalysis?: (analysis: any) => void;
+  onAIAnalysis?: (analysis: Record<string, unknown>) => void;
   className?: string;
   width?: number | string;
   height?: number | string;
+  annotations?: Array<{
+    id: string;
+    position: [number, number, number];
+    content: string;
+    type: 'info' | 'warning' | 'error';
+  }>;
+  materialOverrides?: Record<string, unknown>;
+  postProcessing?: Record<string, unknown>;
 }
 
 interface ViewerStats {
@@ -82,12 +80,6 @@ interface ViewerStats {
   renderTime?: number;
   memoryUsage?: string;
   qualityScore?: number;
-}
-
-interface CameraState {
-  position: { x: number; y: number; z: number };
-  rotation: { x: number; y: number; z: number };
-  zoom: number;
 }
 
 interface AIAnalysis {
@@ -117,13 +109,10 @@ export const ModelViewer3D: React.FC<ModelViewer3DProps> = ({
   showGrid = false,
   showAxes = false,
   enableAR = false,
-  enableVR = false,
   enableCollaboration = false,
   enableAI = false,
   background = 'gradient',
   backgroundColor = '#f0f0f0',
-  environmentUrl,
-  lighting = 'studio',
   animations = [],
   materials = [],
   quality = 'high',
@@ -133,7 +122,6 @@ export const ModelViewer3D: React.FC<ModelViewer3DProps> = ({
   onError,
   onProgress,
   onAnimationChange,
-  onCollaboration,
   onAIAnalysis,
   className,
   width = '100%',
@@ -152,15 +140,10 @@ export const ModelViewer3D: React.FC<ModelViewer3DProps> = ({
   const [wireframeMode, setWireframeMode] = useState(false);
   const [stats, setStats] = useState<ViewerStats | null>(null);
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
-  const [collaborationEvents, setCollaborationEvents] = useState<CollaborationEvent[]>([]);
+  const [collaborationEvents] = useState<CollaborationEvent[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showCollaboration, setShowCollaboration] = useState(false);
   const [showAIPanel, setShowAIPanel] = useState(false);
-  const [cameraState, setCameraState] = useState<CameraState>({
-    position: { x: 0, y: 0, z: 5 },
-    rotation: { x: 0, y: 0, z: 0 },
-    zoom: 1
-  });
 
   // Enhanced initialization with enterprise features
   useEffect(() => {
@@ -181,7 +164,7 @@ export const ModelViewer3D: React.FC<ModelViewer3DProps> = ({
           { step: 'Ready', progress: 100 }
         ];
 
-        for (const { step, progress: stepProgress } of loadingSteps) {
+        for (const { progress: stepProgress } of loadingSteps) {
           await new Promise(resolve => setTimeout(resolve, 200));
           setProgress(stepProgress);
           onProgress?.(stepProgress);
@@ -270,7 +253,7 @@ export const ModelViewer3D: React.FC<ModelViewer3DProps> = ({
     
     setAiAnalysis(mockAnalysis);
     setIsAnalyzing(false);
-    onAIAnalysis?.(mockAnalysis);
+    onAIAnalysis?.(mockAnalysis as unknown as Record<string, unknown>);
   }, [enableAI, onAIAnalysis]);
 
   const handleAnimationChange = useCallback((animationName: string) => {
@@ -283,11 +266,7 @@ export const ModelViewer3D: React.FC<ModelViewer3DProps> = ({
   }, [isAnimationPlaying]);
 
   const resetCamera = useCallback(() => {
-    setCameraState({
-      position: { x: 0, y: 0, z: 5 },
-      rotation: { x: 0, y: 0, z: 0 },
-      zoom: 1
-    });
+    // Reset camera logic
   }, []);
 
   const toggleFullscreen = useCallback(() => {
@@ -309,8 +288,7 @@ export const ModelViewer3D: React.FC<ModelViewer3DProps> = ({
 
   const takeScreenshot = useCallback(() => {
     // Mock screenshot with enterprise features
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    document.createElement('canvas');
     // In real implementation, capture WebGL canvas
     console.log('High-resolution screenshot captured');
   }, []);
@@ -323,20 +301,6 @@ export const ModelViewer3D: React.FC<ModelViewer3DProps> = ({
       });
     }
   }, []);
-
-  const addCollaborationEvent = useCallback((type: 'annotation' | 'comment' | 'measurement', content: string) => {
-    const event: CollaborationEvent = {
-      id: Date.now().toString(),
-      type,
-      position: { x: Math.random(), y: Math.random(), z: Math.random() },
-      content,
-      user: 'Current User',
-      timestamp: new Date()
-    };
-    
-    setCollaborationEvents(prev => [...prev, event]);
-    onCollaboration?.(type, event);
-  }, [onCollaboration]);
 
   if (error) {
     return (
@@ -639,8 +603,8 @@ export const ModelViewer3D: React.FC<ModelViewer3DProps> = ({
                   <div className="flex items-center space-x-2">
                     <span className="text-xs text-gray-600 dark:text-gray-400">Speed:</span>
                     <Slider
-                      value={[animationSpeed]}
-                      onValueChange={([value]) => setAnimationSpeed(value)}
+                      value={animationSpeed}
+                      onChange={(value) => setAnimationSpeed(value as number)}
                       min={0.1}
                       max={3}
                       step={0.1}
@@ -695,8 +659,8 @@ export const ModelViewer3D: React.FC<ModelViewer3DProps> = ({
                   <div className="flex items-center space-x-2">
                     <span className="text-xs text-gray-600 dark:text-gray-400">Lighting:</span>
                     <Slider
-                      value={[lightIntensity]}
-                      onValueChange={([value]) => setLightIntensity(value)}
+                      value={lightIntensity}
+                      onChange={(value) => setLightIntensity(value as number)}
                       min={0}
                       max={2}
                       step={0.1}
@@ -744,7 +708,7 @@ export const ModelViewer3D: React.FC<ModelViewer3DProps> = ({
               {stats.qualityScore && (
                 <div className="flex items-center gap-2">
                   Quality: 
-                  <Badge variant={stats.qualityScore > 90 ? 'success' : stats.qualityScore > 75 ? 'warning' : 'destructive'} size="sm">
+                  <Badge variant={stats.qualityScore > 90 ? 'success' : stats.qualityScore > 75 ? 'warning' : 'error'} size="sm">
                     {stats.qualityScore.toFixed(0)}%
                   </Badge>
                 </div>

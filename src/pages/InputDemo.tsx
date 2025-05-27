@@ -24,7 +24,8 @@ import {
   Mail,
   Phone,
   Search,
-  DollarSign
+  DollarSign,
+  Key
 } from 'lucide-react';
 
 type InputVariant = 'default' | 'ghost' | 'neon' | 'glass' | 'gradient' | 'filled' | 'outlined';
@@ -423,9 +424,10 @@ function MyForm() {
                 </CardHeader>
                 <CardContent>
                   <Input
-                    type="tel"
+                    type="text"
                     label="Phone Number"
                     placeholder="+1 (555) 123-4567"
+                    leftIcon={<Phone className="w-4 h-4" />}
                     value={demoValues.phone || ''}
                     onChange={(e) => handleValueChange('phone', e.target.value)}
                   />
@@ -464,6 +466,65 @@ function MyForm() {
                     placeholder="Enter your name"
                     value={demoValues.floating || ''}
                     onChange={(e) => handleValueChange('floating', e.target.value)}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Key className="w-5 h-5" />
+                    API Key Input
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Input
+                    type="text"
+                    label="API Key"
+                    placeholder="sk-1234567890abcdef"
+                    leftIcon={<Key className="w-4 h-4" />}
+                    value={demoValues.apiKey || ''}
+                    onChange={(e) => handleValueChange('apiKey', e.target.value)}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Lock className="w-5 h-5" />
+                    Secure Password Input
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Input
+                    type="password"
+                    label="Secure Password"
+                    placeholder="Enter secure password"
+                    leftIcon={<Lock className="w-4 h-4" />}
+                    variant="default"
+                    value={demoValues.password || ''}
+                    onChange={(e) => handleValueChange('password', e.target.value)}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Star className="w-5 h-5" />
+                    Animated Input
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Input
+                    type="text"
+                    label="Animated Input"
+                    placeholder="Type here to see animation"
+                    leftIcon={<Star className="w-4 h-4" />}
+                    variant="filled"
+                    value={demoValues.animated || ''}
+                    onChange={(e) => handleValueChange('animated', e.target.value)}
                   />
                 </CardContent>
               </Card>

@@ -77,7 +77,7 @@ export const SliderDemo: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Badge variant="premium">Interactive</Badge>
+            <Badge variant="primary">Interactive</Badge>
             Interactive Sliders
           </CardTitle>
         </CardHeader>
@@ -98,7 +98,7 @@ export const SliderDemo: React.FC = () => {
                 onChange={(value) => setVolumeValue(value as number)}
                 max={100}
                 step={1}
-                variant="premium"
+                variant="primary"
                 className="w-full"
               />
             </div>
@@ -118,7 +118,7 @@ export const SliderDemo: React.FC = () => {
                 onChange={(value) => setBrightnessValue(value as number)}
                 max={100}
                 step={1}
-                variant="neon"
+                variant="primary"
                 className="w-full"
               />
             </div>
@@ -191,7 +191,7 @@ export const SliderDemo: React.FC = () => {
                   onChange={(value) => setSettingsValues(prev => ({ ...prev, performance: value as number }))}
                   max={100}
                   step={1}
-                  variant="success"
+                  variant="primary"
                   className="w-full"
                 />
               </div>
@@ -210,7 +210,7 @@ export const SliderDemo: React.FC = () => {
                   onChange={(value) => setSettingsValues(prev => ({ ...prev, security: value as number }))}
                   max={100}
                   step={1}
-                  variant="premium"
+                  variant="primary"
                   className="w-full"
                 />
               </div>
@@ -218,7 +218,7 @@ export const SliderDemo: React.FC = () => {
 
             <div className="flex justify-center gap-4">
               <Button 
-                variant="premium" 
+                variant="default" 
                 leftIcon={<Settings />}
                 onClick={() => {
                   console.log('Settings saved:', settingsValues);

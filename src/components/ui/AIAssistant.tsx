@@ -1,26 +1,23 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  MessageSquare, 
-  Mic, 
-  MicOff, 
-  Send, 
-  Paperclip, 
-  Image as ImageIcon, 
-  FileText, 
-  Brain, 
-  Zap, 
-  Sparkles,
-  X,
-  Volume2,
-  VolumeX,
-  Copy,
-  ThumbsUp,
-  ThumbsDown,
-  RotateCcw,
+import { motion } from 'framer-motion';
+import {
+  MessageSquare,
+  Send,
+  Mic,
+  MicOff,
+  Paperclip,
+  Settings,
   Maximize2,
   Minimize2,
-  Settings,
+  X,
+  User,
+  Bot,
+  ThumbsUp,
+  ThumbsDown,
+  Copy,
+  Share,
+  Volume2,
+  VolumeX,
   Loader2
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -39,7 +36,7 @@ export interface AIAssistantProps {
   contextAware?: boolean;
   onMessage?: (message: string, type: 'user' | 'assistant') => void;
   onVoiceToggle?: (enabled: boolean) => void;
-  onSettingsChange?: (settings: any) => void;
+  onSettingsChange?: (settings: Record<string, unknown>) => void;
   className?: string;
   disabled?: boolean;
   maxHeight?: number;
@@ -77,18 +74,14 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   capabilities = ['text', 'voice'],
   personality = 'professional',
   language = 'en',
-  voiceEnabled = false,
   autoSuggest = true,
-  contextAware = true,
   onMessage,
   onVoiceToggle,
-  onSettingsChange,
   className,
   disabled = false,
   maxHeight = 600,
   showBranding = true,
-  customPrompts = [],
-  integrations = []
+  customPrompts = []
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -145,9 +138,9 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
   const getInitialSuggestions = (): Suggestion[] => {
     const baseSuggestions = [
-      { id: '1', text: 'What can you help me with?', category: 'quick' as const, icon: <Brain className="w-4 h-4" /> },
-      { id: '2', text: 'Explain a concept', category: 'smart' as const, icon: <FileText className="w-4 h-4" /> },
-      { id: '3', text: 'Help me write something', category: 'smart' as const, icon: <Sparkles className="w-4 h-4" /> }
+      { id: '1', text: 'What can you help me with?', category: 'quick' as const, icon: <User className="w-4 h-4" /> },
+      { id: '2', text: 'Explain a concept', category: 'smart' as const, icon: <Bot className="w-4 h-4" /> },
+      { id: '3', text: 'Help me write something', category: 'smart' as const, icon: <Share className="w-4 h-4" /> }
     ];
 
     if (customPrompts.length > 0) {
@@ -221,10 +214,10 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
       // Update suggestions based on context
       if (autoSuggest) {
-        setSuggestions(generateContextualSuggestions(content, assistantResponse));
+        setSuggestions(generateContextualSuggestions());
       }
 
-    } catch (error) {
+    } catch {
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
         type: 'system',
@@ -311,12 +304,12 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     return personalizedResponse;
   };
 
-  const generateContextualSuggestions = (userInput: string, assistantResponse: string): Suggestion[] => {
+  const generateContextualSuggestions = (): Suggestion[] => {
     // Generate smart suggestions based on conversation context
     const contextSuggestions: Suggestion[] = [
-      { id: 'follow-1', text: 'Tell me more about this', category: 'context', icon: <Brain className="w-4 h-4" /> },
-      { id: 'follow-2', text: 'Can you give an example?', category: 'context', icon: <FileText className="w-4 h-4" /> },
-      { id: 'follow-3', text: 'How does this relate to...', category: 'context', icon: <Sparkles className="w-4 h-4" /> }
+      { id: 'follow-1', text: 'Tell me more about this', category: 'context', icon: <User className="w-4 h-4" /> },
+      { id: 'follow-2', text: 'Can you give an example?', category: 'context', icon: <Bot className="w-4 h-4" /> },
+      { id: 'follow-3', text: 'How does this relate to...', category: 'context', icon: <Share className="w-4 h-4" /> }
     ];
 
     return contextSuggestions;
@@ -344,9 +337,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         };
 
         mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-          // Here you would typically send the audio to a speech-to-text service
-          const transcribedText = await mockSpeechToText(audioBlob);
+          // In a real implementation, the audio blob would be sent to a speech-to-text API
+          const transcribedText = await mockSpeechToText();
           if (transcribedText) {
             setInputValue(transcribedText);
           }
@@ -365,7 +357,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     onVoiceToggle?.(!isRecording);
   }, [isRecording, capabilities, onVoiceToggle]);
 
-  const mockSpeechToText = async (audioBlob: Blob): Promise<string> => {
+  const mockSpeechToText = async (): Promise<string> => {
     // Mock speech-to-text implementation
     await new Promise(resolve => setTimeout(resolve, 1000));
     const mockTranscriptions = [
@@ -455,7 +447,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-            <Brain className="w-4 h-4 text-white" />
+            <User className="w-4 h-4 text-white" />
           </div>
           <div>
             <h3 className="font-semibold text-sm">AI Assistant</h3>
@@ -521,7 +513,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           >
             {message.type === 'assistant' && (
               <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                <Brain className="w-4 h-4 text-white" />
+                <User className="w-4 h-4 text-white" />
               </div>
             )}
             

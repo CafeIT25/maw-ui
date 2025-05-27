@@ -139,12 +139,12 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     if (href) {
       return (
         <motion.a
-          ref={ref as any}
+          ref={ref as React.Ref<HTMLAnchorElement>}
           href={href}
           target={target}
           className={badgeClasses}
+          style={props.style}
           {...motionProps}
-          {...props}
         >
           {content}
         </motion.a>
@@ -155,8 +155,8 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
       <motion.span
         ref={ref}
         className={badgeClasses}
+        style={props.style}
         {...motionProps}
-        {...props}
       >
         {content}
         
