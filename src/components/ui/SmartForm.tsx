@@ -16,28 +16,16 @@ import {
   Phone,
   Lock,
   CreditCard,
-  Building,
   Globe,
   Zap,
   Brain,
   Sparkles,
-  Target,
-  TrendingUp,
-  Shield,
-  Wand2,
   Search,
-  Plus,
-  Minus,
   X,
   Check,
-  ChevronDown,
-  ChevronUp,
-  Star,
-  Heart,
-  Bookmark
+  Star
 } from 'lucide-react';
 import { Button } from './Button';
-import { Card, CardContent } from './Card';
 import { Badge } from './Badge';
 
 // Form field types
@@ -67,9 +55,9 @@ export type FieldType =
 
 export interface ValidationRule {
   type: 'required' | 'email' | 'minLength' | 'maxLength' | 'pattern' | 'custom';
-  value?: any;
+  value?: string | number | RegExp;
   message: string;
-  validator?: (value: any) => boolean | Promise<boolean>;
+  validator?: (value: unknown) => boolean | Promise<boolean>;
 }
 
 export interface FieldOption {
@@ -93,7 +81,7 @@ export interface SmartFieldConfig {
   hidden?: boolean;
   validation?: ValidationRule[];
   options?: FieldOption[];
-  defaultValue?: any;
+  defaultValue?: unknown;
   min?: number;
   max?: number;
   step?: number;
@@ -110,7 +98,7 @@ export interface SmartFieldConfig {
   conditionalLogic?: {
     field: string;
     operator: 'equals' | 'notEquals' | 'contains' | 'greaterThan' | 'lessThan';
-    value: any;
+    value: unknown;
     action: 'show' | 'hide' | 'enable' | 'disable' | 'require';
   }[];
   aiSuggestions?: boolean;
@@ -138,17 +126,17 @@ export interface SmartFormConfig {
     description?: string;
     fields: string[];
   }[];
-  onSubmit?: (data: Record<string, any>) => void | Promise<void>;
-  onFieldChange?: (fieldId: string, value: any, allData: Record<string, any>) => void;
-  onValidate?: (data: Record<string, any>) => Record<string, string> | Promise<Record<string, string>>;
+  onSubmit?: (data: Record<string, unknown>) => void | Promise<void>;
+  onFieldChange?: (fieldId: string, value: unknown, allData: Record<string, unknown>) => void;
+  onValidate?: (data: Record<string, unknown>) => Record<string, string> | Promise<Record<string, string>>;
 }
 
 export interface SmartFormProps extends VariantProps<typeof formVariants> {
   config: SmartFormConfig;
-  initialData?: Record<string, any>;
+  initialData?: Record<string, unknown>;
   className?: string;
-  onSubmit?: (data: Record<string, any>) => void;
-  onFieldChange?: (fieldId: string, value: any) => void;
+  onSubmit?: (data: Record<string, unknown>) => void;
+  onFieldChange?: (fieldId: string, value: unknown) => void;
 }
 
 const formVariants = cva(
@@ -268,7 +256,7 @@ const useAISuggestions = (fieldType: FieldType, value: string) => {
 };
 
 // Smart Validation Hook
-const useSmartValidation = (field: SmartFieldConfig, value: any) => {
+const useSmartValidation = (field: SmartFieldConfig, value: unknown) => {
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [isValidating, setIsValidating] = useState(false);
@@ -291,16 +279,23 @@ const useSmartValidation = (field: SmartFieldConfig, value: any) => {
           isRuleValid = value !== '' && value !== null && value !== undefined;
           break;
         case 'email':
-          isRuleValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+          isRuleValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value));
           break;
         case 'minLength':
-          isRuleValid = value.length >= rule.value;
+          if (rule.value !== undefined) {
+            isRuleValid = String(value).length >= Number(rule.value);
+          }
           break;
         case 'maxLength':
-          isRuleValid = value.length <= rule.value;
+          if (rule.value !== undefined) {
+            isRuleValid = String(value).length <= Number(rule.value);
+          }
           break;
         case 'pattern':
-          isRuleValid = new RegExp(rule.value).test(value);
+          if (rule.value !== undefined) {
+            const pattern = rule.value instanceof RegExp ? rule.value : new RegExp(String(rule.value));
+            isRuleValid = pattern.test(String(value));
+          }
           break;
         case 'custom':
           if (rule.validator) {
@@ -323,8 +318,12 @@ const useSmartValidation = (field: SmartFieldConfig, value: any) => {
     if (value !== '' && value !== null && value !== undefined) {
       const debounceTimer = setTimeout(validate, 300);
       return () => clearTimeout(debounceTimer);
+    } else {
+      setIsValid(null);
+      setErrors([]);
     }
-  }, [value, validate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, field.validation]);
 
   return { isValid, errors, isValidating };
 };
@@ -332,17 +331,17 @@ const useSmartValidation = (field: SmartFieldConfig, value: any) => {
 // Smart Field Component
 const SmartField: React.FC<{
   field: SmartFieldConfig;
-  value: any;
-  onChange: (value: any) => void;
+  value: unknown;
+  onChange: (value: unknown) => void;
   variant?: 'default' | 'floating' | 'minimal' | 'neon' | 'gradient';
-  formData: Record<string, any>;
+  formData: Record<string, unknown>;
 }> = ({ field, value, onChange, variant = 'default', formData }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [selectedTags, setSelectedTags] = useState<string[]>(value || []);
-  const [rating, setRating] = useState<number>(value || 0);
+  const [selectedTags, setSelectedTags] = useState<string[]>(Array.isArray(value) ? value : []);
+  const [rating, setRating] = useState<number>(typeof value === 'number' ? value : 0);
   
-  const { suggestions, loading: suggestionsLoading } = useAISuggestions(field.type, value || '');
+  const { suggestions } = useAISuggestions(field.type, String(value) || '');
   const { isValid, errors, isValidating } = useSmartValidation(field, value);
 
   // Check conditional logic
@@ -376,7 +375,7 @@ const SmartField: React.FC<{
   const renderField = () => {
     const baseProps = {
       id: field.id,
-      value: value || '',
+      value: String(value || ''),
       onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => 
         onChange(e.target.value),
       onFocus: () => setIsFocused(true),
@@ -423,13 +422,13 @@ const SmartField: React.FC<{
               <label key={option.value} className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={(value || []).includes(option.value)}
+                  checked={Array.isArray(value) && value.includes(option.value)}
                   onChange={(e) => {
-                    const currentValues = value || [];
+                    const currentValues = Array.isArray(value) ? value : [];
                     if (e.target.checked) {
                       onChange([...currentValues, option.value]);
                     } else {
-                      onChange(currentValues.filter((v: any) => v !== option.value));
+                      onChange(currentValues.filter((v: unknown) => v !== option.value));
                     }
                   }}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -464,7 +463,7 @@ const SmartField: React.FC<{
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
-              checked={value || false}
+              checked={Boolean(value)}
               onChange={(e) => onChange(e.target.checked)}
               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
@@ -480,13 +479,13 @@ const SmartField: React.FC<{
               min={field.min || 0}
               max={field.max || 100}
               step={field.step || 1}
-              value={value || field.min || 0}
+              value={typeof value === 'number' ? value : field.min || 0}
               onChange={(e) => onChange(Number(e.target.value))}
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
             />
             <div className="flex justify-between text-sm text-gray-500">
               <span>{field.min || 0}</span>
-              <span className="font-medium">{value || field.min || 0}</span>
+              <span className="font-medium">{typeof value === 'number' ? value : field.min || 0}</span>
               <span>{field.max || 100}</span>
             </div>
           </div>
@@ -712,38 +711,52 @@ export const SmartForm: React.FC<SmartFormProps> = ({
   onSubmit,
   onFieldChange
 }) => {
-  const [formData, setFormData] = useState<Record<string, any>>(initialData);
+  const [formData, setFormData] = useState<Record<string, unknown>>(initialData);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [globalErrors, setGlobalErrors] = useState<Record<string, string>>({});
   const formRef = useRef<HTMLFormElement>(null);
+  const autoSaveTimeoutRef = useRef<number | undefined>(undefined);
 
   // Auto-save functionality
   useEffect(() => {
     if (config.autoSave) {
-      const saveTimer = setTimeout(() => {
+      // Clear previous timeout
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+      
+      // Set new timeout
+      autoSaveTimeoutRef.current = setTimeout(() => {
         localStorage.setItem(`smartform_${config.id}`, JSON.stringify(formData));
       }, 1000);
-      return () => clearTimeout(saveTimer);
+      
+      return () => {
+        if (autoSaveTimeoutRef.current !== undefined) {
+          clearTimeout(autoSaveTimeoutRef.current);
+        }
+      };
     }
   }, [formData, config.autoSave, config.id]);
 
-  // Load saved data
+  // Load saved data - only run once on mount
   useEffect(() => {
     if (config.autoSave) {
       const savedData = localStorage.getItem(`smartform_${config.id}`);
       if (savedData) {
         try {
-          setFormData({ ...initialData, ...JSON.parse(savedData) });
+          const parsedData = JSON.parse(savedData);
+          setFormData({ ...initialData, ...parsedData });
         } catch (error) {
           console.error('Failed to load saved form data:', error);
         }
       }
     }
-  }, [config.autoSave, config.id, initialData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.autoSave, config.id]);
 
-  const handleFieldChange = (fieldId: string, value: any) => {
+  const handleFieldChange = (fieldId: string, value: unknown) => {
     const newFormData = { ...formData, [fieldId]: value };
     setFormData(newFormData);
     
@@ -914,7 +927,7 @@ export const SmartForm: React.FC<SmartFormProps> = ({
 
         {/* Form Fields */}
         <div className={cn(spacing === 'compact' ? 'space-y-4' : spacing === 'relaxed' ? 'space-y-8' : 'space-y-6')}>
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             {getVisibleFields().map((field) => (
               <SmartField
                 key={field.id}

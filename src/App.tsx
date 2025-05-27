@@ -8,6 +8,9 @@ import { Examples } from './pages/Examples';
 import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
 import { ComponentDetailPage } from './pages/ComponentDetailPage';
+import { InputDemo } from './pages/InputDemo';
+import { SelectDemo } from './pages/SelectDemo';
+import { SmartFormDemo } from './pages/SmartFormDemo';
 
 import './lib/i18n';
 import './App.css';
@@ -36,6 +39,9 @@ function App() {
             <Route path="/components/:componentId" element={<ComponentDetailPage />} />
             <Route path="/documentation" element={<Documentation />} />
             <Route path="/examples" element={<Examples />} />
+            <Route path="/examples/input" element={<InputDemo />} />
+            <Route path="/examples/select" element={<SelectDemo />} />
+            <Route path="/examples/smartform" element={<SmartFormDemo />} />
           </Routes>
           <Footer />
         </div>
