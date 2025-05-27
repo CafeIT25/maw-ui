@@ -1,807 +1,1007 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Select } from '../components/ui/Select';
-import { Button } from '../components/ui/Button';
+import type { SelectOption } from '../components/ui/Select';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/Tabs';
+import { Button } from '../components/ui/Button';
 import { 
-  Code, 
-  Copy, 
-  Star, 
-  Zap, 
-  Sparkles, 
-  Rocket,
-  Shield,
-  Globe,
   Search,
-  Filter,
-  Users,
+  X,
+  Globe,
+  MapPin,
   Building,
-  ChevronDown,
-  CheckCircle,
+  Clock,
+  Star,
   Settings,
-  Database,
-  Cloud,
-  Smartphone,
-  Palette,
+  Filter,
+  Tag,
   Flag,
-  Brain,
+  Palette,
+  Code,
+  Eye,
+  Copy,
+  Cpu,
+  Database,
+  TrendingUp,
+  Sparkles,
+  Rocket,
+  Zap,
   Target,
   Layers,
-  Cpu,
-  Lock,
-  Award,
-  Crown,
-  Gem,
-  Lightbulb,
-  Workflow,
-  Network,
-  Server
+  Shield,
+  CheckCircle,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  ArrowLeft,
 } from 'lucide-react';
 
-export const SelectDemo: React.FC = () => {
-  const [basicValue, setBasicValue] = useState<string>('');
-  const [multiValue, setMultiValue] = useState<string[]>([]);
-  const [searchableValue, setSearchableValue] = useState<string>('');
-  const [asyncValue, setAsyncValue] = useState<string>('');
-  const [premiumValue, setPremiumValue] = useState<string[]>([]);
-  const [isAsyncLoading, setIsAsyncLoading] = useState(false);
+// Component navigation order
+const componentOrder = [
+  { id: 'button', title: 'Button', path: '/components/button' },
+  { id: 'input', title: 'Input', path: '/components/input' },
+  { id: 'carousel', title: 'Carousel', path: '/components/carousel' },
+  { id: 'select', title: 'Select', path: '/components/select' },
+  { id: 'slider', title: 'Slider', path: '/components/slider' },
+  { id: 'smartform', title: 'SmartForm', path: '/examples/smartform' },
+];
 
-  // Basic options
-  const basicOptions = [
-    { value: 'option1', label: 'Option 1' },
-    { value: 'option2', label: 'Option 2' },
-    { value: 'option3', label: 'Option 3' },
-    { value: 'option4', label: 'Option 4', disabled: true },
-  ];
+// Demo data
+const countryOptions: SelectOption[] = [
+  { value: 'us', label: 'United States', icon: <Flag className="w-4 h-4" />, description: 'North America' },
+  { value: 'jp', label: 'Japan', icon: <Flag className="w-4 h-4" />, description: 'Asia' },
+  { value: 'gb', label: 'United Kingdom', icon: <Flag className="w-4 h-4" />, description: 'Europe' },
+  { value: 'de', label: 'Germany', icon: <Flag className="w-4 h-4" />, description: 'Europe' },
+  { value: 'fr', label: 'France', icon: <Flag className="w-4 h-4" />, description: 'Europe' },
+  { value: 'ca', label: 'Canada', icon: <Flag className="w-4 h-4" />, description: 'North America' },
+  { value: 'au', label: 'Australia', icon: <Flag className="w-4 h-4" />, description: 'Oceania' },
+  { value: 'kr', label: 'South Korea', icon: <Flag className="w-4 h-4" />, description: 'Asia' },
+];
 
-  // Country options with flags
-  const countryOptions = [
-    { value: 'us', label: 'United States', icon: <Flag className="w-4 h-4" />, description: 'North America' },
-    { value: 'jp', label: 'Japan', icon: <Flag className="w-4 h-4" />, description: 'Asia Pacific' },
-    { value: 'de', label: 'Germany', icon: <Flag className="w-4 h-4" />, description: 'Europe' },
-    { value: 'uk', label: 'United Kingdom', icon: <Flag className="w-4 h-4" />, description: 'Europe' },
-    { value: 'ca', label: 'Canada', icon: <Flag className="w-4 h-4" />, description: 'North America' },
-    { value: 'au', label: 'Australia', icon: <Flag className="w-4 h-4" />, description: 'Oceania' },
-    { value: 'fr', label: 'France', icon: <Flag className="w-4 h-4" />, description: 'Europe' },
-    { value: 'kr', label: 'South Korea', icon: <Flag className="w-4 h-4" />, description: 'Asia Pacific' },
-    { value: 'sg', label: 'Singapore', icon: <Flag className="w-4 h-4" />, description: 'Asia Pacific' },
-    { value: 'nl', label: 'Netherlands', icon: <Flag className="w-4 h-4" />, description: 'Europe' },
-  ];
+const skillOptions: SelectOption[] = [
+  { value: 'react', label: 'React', icon: <Code className="w-4 h-4" />, description: 'JavaScript Library' },
+  { value: 'typescript', label: 'TypeScript', icon: <Code className="w-4 h-4" />, description: 'Programming Language' },
+  { value: 'nodejs', label: 'Node.js', icon: <Code className="w-4 h-4" />, description: 'Runtime Environment' },
+  { value: 'python', label: 'Python', icon: <Code className="w-4 h-4" />, description: 'Programming Language' },
+  { value: 'docker', label: 'Docker', icon: <Code className="w-4 h-4" />, description: 'Containerization' },
+  { value: 'aws', label: 'AWS', icon: <Code className="w-4 h-4" />, description: 'Cloud Platform' },
+  { value: 'kubernetes', label: 'Kubernetes', icon: <Code className="w-4 h-4" />, description: 'Container Orchestration' },
+  { value: 'graphql', label: 'GraphQL', icon: <Code className="w-4 h-4" />, description: 'Query Language' },
+];
 
-  // Technology stack options
-  const techStackOptions = [
-    { value: 'react', label: 'React', icon: <Cpu className="w-4 h-4 text-blue-500" />, description: 'Frontend Framework' },
-    { value: 'vue', label: 'Vue.js', icon: <Cpu className="w-4 h-4 text-green-500" />, description: 'Frontend Framework' },
-    { value: 'angular', label: 'Angular', icon: <Cpu className="w-4 h-4 text-red-500" />, description: 'Frontend Framework' },
-    { value: 'node', label: 'Node.js', icon: <Server className="w-4 h-4 text-green-600" />, description: 'Backend Runtime' },
-    { value: 'python', label: 'Python', icon: <Server className="w-4 h-4 text-yellow-500" />, description: 'Backend Language' },
-    { value: 'java', label: 'Java', icon: <Server className="w-4 h-4 text-orange-500" />, description: 'Backend Language' },
-    { value: 'postgres', label: 'PostgreSQL', icon: <Database className="w-4 h-4 text-blue-600" />, description: 'Database' },
-    { value: 'mongo', label: 'MongoDB', icon: <Database className="w-4 h-4 text-green-700" />, description: 'Database' },
-    { value: 'redis', label: 'Redis', icon: <Database className="w-4 h-4 text-red-600" />, description: 'Cache/Database' },
-    { value: 'aws', label: 'AWS', icon: <Cloud className="w-4 h-4 text-orange-600" />, description: 'Cloud Platform' },
-    { value: 'gcp', label: 'Google Cloud', icon: <Cloud className="w-4 h-4 text-blue-500" />, description: 'Cloud Platform' },
-    { value: 'azure', label: 'Microsoft Azure', icon: <Cloud className="w-4 h-4 text-blue-700" />, description: 'Cloud Platform' },
-  ];
+const priorityOptions: SelectOption[] = [
+  { value: 'low', label: 'Low Priority', icon: <CheckCircle className="w-4 h-4 text-green-500" /> },
+  { value: 'medium', label: 'Medium Priority', icon: <AlertCircle className="w-4 h-4 text-yellow-500" /> },
+  { value: 'high', label: 'High Priority', icon: <AlertCircle className="w-4 h-4 text-red-500" /> },
+  { value: 'urgent', label: 'Urgent', icon: <Zap className="w-4 h-4 text-purple-500" /> },
+];
 
-  // Enterprise roles with hierarchy
-  const enterpriseRoles = [
-    { value: 'ceo', label: 'Chief Executive Officer', icon: <Crown className="w-4 h-4 text-purple-600" />, description: 'C-Level Executive' },
-    { value: 'cto', label: 'Chief Technology Officer', icon: <Crown className="w-4 h-4 text-blue-600" />, description: 'C-Level Executive' },
-    { value: 'cfo', label: 'Chief Financial Officer', icon: <Crown className="w-4 h-4 text-green-600" />, description: 'C-Level Executive' },
-    { value: 'vp_eng', label: 'VP of Engineering', icon: <Award className="w-4 h-4 text-indigo-600" />, description: 'Vice President' },
-    { value: 'vp_product', label: 'VP of Product', icon: <Award className="w-4 h-4 text-purple-500" />, description: 'Vice President' },
-    { value: 'director_eng', label: 'Director of Engineering', icon: <Target className="w-4 h-4 text-blue-500" />, description: 'Director Level' },
-    { value: 'principal_eng', label: 'Principal Engineer', icon: <Gem className="w-4 h-4 text-cyan-500" />, description: 'Senior Individual Contributor' },
-    { value: 'staff_eng', label: 'Staff Engineer', icon: <Star className="w-4 h-4 text-yellow-500" />, description: 'Senior Individual Contributor' },
-    { value: 'senior_eng', label: 'Senior Engineer', icon: <Rocket className="w-4 h-4 text-orange-500" />, description: 'Individual Contributor' },
-    { value: 'engineer', label: 'Software Engineer', icon: <Code className="w-4 h-4 text-gray-600" />, description: 'Individual Contributor' },
-    { value: 'product_manager', label: 'Product Manager', icon: <Lightbulb className="w-4 h-4 text-yellow-600" />, description: 'Product Team' },
-    { value: 'designer', label: 'Product Designer', icon: <Palette className="w-4 h-4 text-pink-500" />, description: 'Design Team' },
-    { value: 'data_scientist', label: 'Data Scientist', icon: <Brain className="w-4 h-4 text-purple-500" />, description: 'Data Team' },
-    { value: 'devops', label: 'DevOps Engineer', icon: <Workflow className="w-4 h-4 text-green-500" />, description: 'Infrastructure Team' },
-    { value: 'security', label: 'Security Engineer', icon: <Lock className="w-4 h-4 text-red-500" />, description: 'Security Team' },
-  ];
+const categoryOptions: SelectOption[] = [
+  { value: 'frontend', label: 'Frontend Development', icon: <Globe className="w-4 h-4" /> },
+  { value: 'backend', label: 'Backend Development', icon: <Database className="w-4 h-4" /> },
+  { value: 'fullstack', label: 'Full Stack Development', icon: <Layers className="w-4 h-4" /> },
+  { value: 'mobile', label: 'Mobile Development', icon: <Cpu className="w-4 h-4" /> },
+  { value: 'devops', label: 'DevOps & Infrastructure', icon: <Settings className="w-4 h-4" /> },
+  { value: 'design', label: 'UI/UX Design', icon: <Palette className="w-4 h-4" /> },
+];
 
-  // Simulate async loading
-  const handleAsyncLoad = useCallback(async () => {
-    setIsAsyncLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsAsyncLoading(false);
-    setAsyncValue('loaded_data');
-  }, []);
-
-  const asyncOptions = useMemo(() => [
-    { value: 'loading', label: 'Loading...', disabled: true },
-    { value: 'loaded_data', label: 'Loaded Data from API' },
-    { value: 'cached_data', label: 'Cached Data' },
-  ], []);
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    // You can add toast notification here
-  };
-
-  const codeExamples = {
-    basic: `<Select
-  options={basicOptions}
-  value={value}
-  onValueChange={setValue}
+const codeExamples = {
+  basic: `<Select
+  options={options}
   placeholder="Select an option..."
+  onValueChange={(value) => console.log(value)}
 />`,
-    searchable: `<Select
+  searchable: `<Select
   options={countryOptions}
-  value={value}
-  onValueChange={setValue}
   placeholder="Search countries..."
   searchable
   clearable
+  onValueChange={(value) => setCountry(value)}
 />`,
-    multiple: `<Select
-  options={techStackOptions}
-  value={value}
-  onValueChange={setValue}
-  placeholder="Select technologies..."
+  multiple: `<Select
+  options={skillOptions}
+  placeholder="Select your skills..."
   multiple
   searchable
   clearable
+  onValueChange={(values) => setSkills(values)}
 />`,
-    async: `const [loading, setLoading] = useState(false);
+  advanced: `<Select
+  options={categoryOptions}
+  value={selectedCategory}
+  variant="neon"
+  size="lg"
+  searchable
+  clearable
+  loading={isLoading}
+  error={hasError}
+  onValueChange={(value) => handleCategoryChange(value)}
+/>`
+};
 
-<Select
-  options={asyncOptions}
-  value={value}
-  onValueChange={setValue}
-  placeholder="Load data..."
-  loading={loading}
-  onFocus={() => loadAsyncData()}
-/>`,
-    variants: `{/* Different variants */}
-<Select variant="default" {...props} />
-<Select variant="filled" {...props} />
-<Select variant="outlined" {...props} />
-<Select variant="ghost" {...props} />
-<Select variant="neon" {...props} />`,
+const demoScenarios = [
+  {
+    id: 'country',
+    title: 'Country Selection',
+    description: 'Global location picker with search',
+    icon: Globe,
+    color: 'from-blue-500 to-purple-600'
+  },
+  {
+    id: 'skills',
+    title: 'Multi-Select Skills',
+    description: 'Multiple selection with chips',
+    icon: Star,
+    color: 'from-green-500 to-emerald-600'
+  },
+  {
+    id: 'priority',
+    title: 'Priority Selection',
+    description: 'Status-based options with icons',
+    icon: Flag,
+    color: 'from-orange-500 to-red-600'
+  },
+  {
+    id: 'category',
+    title: 'Category Filter',
+    description: 'Advanced filtering options',
+    icon: Filter,
+    color: 'from-purple-500 to-pink-600'
+  }
+];
+
+export const SelectDemo: React.FC = () => {
+  const navigate = useNavigate();
+  const [activeDemo, setActiveDemo] = useState('country');
+  const [codeVisible, setCodeVisible] = useState(false);
+  const [selectedCodeExample, setSelectedCodeExample] = useState('basic');
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
+  
+  const [formData, setFormData] = useState({
+    country: '',
+    skills: [] as string[],
+    priority: '',
+    category: '',
+    timezone: '',
+    language: '',
+    department: '',
+    role: ''
+  });
+
+  const heroRef = useRef<HTMLDivElement>(null);
+
+  // Navigation functions
+  const getCurrentComponentIndex = () => {
+    return componentOrder.findIndex(comp => comp.id === 'select');
+  };
+
+  const handlePrevious = () => {
+    const currentIndex = getCurrentComponentIndex();
+    if (currentIndex > 0) {
+      const prevComponent = componentOrder[currentIndex - 1];
+      navigate(prevComponent.path);
+    }
+  };
+
+  const handleNext = () => {
+    const currentIndex = getCurrentComponentIndex();
+    if (currentIndex < componentOrder.length - 1) {
+      const nextComponent = componentOrder[currentIndex + 1];
+      navigate(nextComponent.path);
+    }
+  };
+
+  const canNavigatePrevious = () => {
+    const currentIndex = getCurrentComponentIndex();
+    return currentIndex > 0;
+  };
+
+  const canNavigateNext = () => {
+    const currentIndex = getCurrentComponentIndex();
+    return currentIndex < componentOrder.length - 1;
+  };
+
+  const handleBackToComponents = () => {
+    navigate('/components');
+  };
+
+  const handleLoadingDemo = async (key: string) => {
+    setLoading(prev => ({ ...prev, [key]: true }));
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setLoading(prev => ({ ...prev, [key]: false }));
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  const handleSelectChange = (field: string, value: string | string[]) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto p-6">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center space-y-4"
-      >
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-full text-blue-800 dark:text-blue-200 text-sm font-medium">
-          <ChevronDown className="w-4 h-4" />
-          Next-Generation Select Component
-        </div>
-        
-        <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
-          Advanced Select Demo
-        </h1>
-        
-        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-          Experience the most sophisticated select component with enterprise-grade features, 
-          intelligent search, async loading, and stunning animations that will impress developers from any major tech company.
-        </p>
-        
-        <div className="flex justify-center gap-2 mt-6">
-          <Badge variant="premium" size="lg">
-            <Star className="w-4 h-4 mr-1" />
-            Enterprise Ready
-          </Badge>
-          <Badge variant="outline" size="lg">
-            <Shield className="w-4 h-4 mr-1" />
-            TypeScript
-          </Badge>
-          <Badge variant="premium" size="lg">
-            <Sparkles className="w-4 h-4 mr-1" />
-            Animated
-          </Badge>
-          <Badge variant="outline" size="lg">
-            <CheckCircle className="w-4 h-4 mr-1" />
-            Accessible
-          </Badge>
-        </div>
-      </motion.div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-purple-900">
+      {/* Animated Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-emerald-400/20 to-blue-600/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-purple-400/10 to-pink-600/10 rounded-full blur-3xl animate-pulse delay-500" />
+      </div>
 
-      <Tabs defaultValue="showcase" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="showcase">Showcase</TabsTrigger>
-          <TabsTrigger value="variants">Variants</TabsTrigger>
-          <TabsTrigger value="features">Features</TabsTrigger>
-          <TabsTrigger value="enterprise">Enterprise</TabsTrigger>
-          <TabsTrigger value="code">Code</TabsTrigger>
-          <TabsTrigger value="api">API</TabsTrigger>
-        </TabsList>
-
-        {/* Interactive Showcase */}
-        <TabsContent value="showcase" className="space-y-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Rocket className="w-5 h-5" />
-                Interactive Showcase
-              </CardTitle>
-              <CardDescription>
-                Try different configurations and see real-time behavior changes
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-8">
-              {/* Basic Select */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Settings className="w-5 h-5" />
-                  Basic Select
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Standard select with clean design and smooth animations
-                </p>
-                <div className="max-w-md">
-                  <Select
-                    options={basicOptions}
-                    value={basicValue}
-                    onValueChange={(value) => setBasicValue(value as string)}
-                    placeholder="Choose an option..."
-                  />
-                </div>
-                <div className="text-sm text-gray-500">
-                  Selected: <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{basicValue || 'none'}</code>
-                </div>
-              </div>
-
-              {/* Searchable Country Select */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Globe className="w-5 h-5" />
-                  Searchable with Icons & Descriptions
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Global country selector with intelligent search and contextual information
-                </p>
-                <div className="max-w-md">
-                  <Select
-                    options={countryOptions}
-                    value={searchableValue}
-                    onValueChange={(value) => setSearchableValue(value as string)}
-                    placeholder="Search countries..."
-                    searchable
-                    clearable
-                  />
-                </div>
-                <div className="text-sm text-gray-500">
-                  Selected: <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{searchableValue || 'none'}</code>
-                </div>
-              </div>
-
-              {/* Multi-Select Tech Stack */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Layers className="w-5 h-5" />
-                  Multi-Select Technology Stack
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Select multiple technologies with smart tag management and categorization
-                </p>
-                <div className="max-w-lg">
-                  <Select
-                    options={techStackOptions}
-                    value={multiValue}
-                    onValueChange={(value) => setMultiValue(value as string[])}
-                    placeholder="Select your tech stack..."
-                    multiple
-                    searchable
-                    clearable
-                  />
-                </div>
-                <div className="text-sm text-gray-500">
-                  Selected ({multiValue.length}): 
-                  <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded ml-1">
-                    {multiValue.length > 0 ? multiValue.join(', ') : 'none'}
-                  </code>
-                </div>
-              </div>
-
-              {/* Async Loading */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Cloud className="w-5 h-5" />
-                  Async Data Loading
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Demonstrates async data fetching with loading states and error handling
-                </p>
-                <div className="flex gap-4 items-end max-w-lg">
-                  <div className="flex-1">
-                    <Select
-                      options={asyncOptions}
-                      value={asyncValue}
-                      onValueChange={(value) => setAsyncValue(value as string)}
-                      placeholder="Load async data..."
-                      loading={isAsyncLoading}
-                      clearable
-                    />
-                  </div>
-                  <Button 
-                    onClick={handleAsyncLoad} 
-                    disabled={isAsyncLoading}
-                    className="whitespace-nowrap"
-                  >
-                    {isAsyncLoading ? 'Loading...' : 'Load Data'}
-                  </Button>
-                </div>
-                <div className="text-sm text-gray-500">
-                  Status: <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                    {isAsyncLoading ? 'loading...' : asyncValue || 'ready'}
-                  </code>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Variants */}
-        <TabsContent value="variants" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(['default', 'filled', 'outlined', 'ghost', 'neon'] as const).map((variant) => (
-              <Card key={variant} className={variant === 'neon' ? 'bg-black border-cyan-400' : ''}>
-                <CardHeader>
-                  <CardTitle className={`capitalize ${variant === 'neon' ? 'text-cyan-400' : ''}`}>
-                    {variant} Variant
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <Select
-                      options={basicOptions}
-                      placeholder={`${variant} select...`}
-                      variant={variant}
-                    />
-                    <Select
-                      options={basicOptions}
-                      placeholder={`${variant} searchable...`}
-                      variant={variant}
-                      searchable
-                      clearable
-                    />
-                    <Select
-                      options={basicOptions}
-                      placeholder={`${variant} disabled...`}
-                      variant={variant}
-                      disabled
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        {/* Advanced Features */}
-        <TabsContent value="features" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Sizes */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Size Variants</CardTitle>
-                <CardDescription>Different sizes for various use cases</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Small</label>
-                  <Select
-                    options={basicOptions}
-                    placeholder="Small select..."
-                    size="sm"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Default</label>
-                  <Select
-                    options={basicOptions}
-                    placeholder="Default select..."
-                    size="default"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Large</label>
-                  <Select
-                    options={basicOptions}
-                    placeholder="Large select..."
-                    size="lg"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* States */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Component States</CardTitle>
-                <CardDescription>Loading, error, and disabled states</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Loading State</label>
-                  <Select
-                    options={basicOptions}
-                    placeholder="Loading..."
-                    loading
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Error State</label>
-                  <Select
-                    options={basicOptions}
-                    placeholder="Error state..."
-                    error
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Disabled State</label>
-                  <Select
-                    options={basicOptions}
-                    placeholder="Disabled..."
-                    disabled
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Feature Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              { icon: <Search className="w-5 h-5" />, title: 'Intelligent Search', desc: 'Real-time filtering with fuzzy matching' },
-              { icon: <Layers className="w-5 h-5" />, title: 'Multi-Selection', desc: 'Advanced tag management system' },
-              { icon: <Cloud className="w-5 h-5" />, title: 'Async Loading', desc: 'Seamless data fetching integration' },
-              { icon: <Filter className="w-5 h-5" />, title: 'Smart Filtering', desc: 'Context-aware option filtering' },
-              { icon: <Settings className="w-5 h-5" />, title: 'Customizable', desc: 'Extensive theming and styling options' },
-              { icon: <Shield className="w-5 h-5" />, title: 'Accessible', desc: 'WCAG 2.1 AA compliant' },
-              { icon: <Smartphone className="w-5 h-5" />, title: 'Mobile Optimized', desc: 'Touch-friendly interactions' },
-              { icon: <Zap className="w-5 h-5" />, title: 'High Performance', desc: 'Virtual scrolling for large datasets' },
-              { icon: <Globe className="w-5 h-5" />, title: 'Internationalization', desc: 'Built-in i18n support' },
-            ].map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  {feature.icon}
-                  <h3 className="font-semibold">{feature.title}</h3>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{feature.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </TabsContent>
-
-        {/* Enterprise Use Cases */}
-        <TabsContent value="enterprise" className="space-y-6">
-          <Card className="border-2 border-purple-200 dark:border-purple-800">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building className="w-5 h-5" />
-                Enterprise Role Selection
-              </CardTitle>
-              <CardDescription>
-                Hierarchical role management with intelligent categorization and search
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="max-w-lg">
-                <Select
-                  options={enterpriseRoles}
-                  value={premiumValue}
-                  onValueChange={(value) => setPremiumValue(value as string[])}
-                  placeholder="Select organizational roles..."
-                  multiple
-                  searchable
-                  clearable
-                  variant="outlined"
-                />
-              </div>
-              
-              <div className="space-y-4">
-                <h4 className="font-semibold">Selected Roles ({premiumValue.length}):</h4>
-                <div className="flex flex-wrap gap-2">
-                  {premiumValue.map((roleValue) => {
-                    const role = enterpriseRoles.find(r => r.value === roleValue);
-                    return role ? (
-                      <Badge key={roleValue} variant="premium" className="flex items-center gap-1">
-                        {role.icon}
-                        {role.label}
-                      </Badge>
-                    ) : null;
-                  })}
-                </div>
-                
-                {premiumValue.length === 0 && (
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">
-                    No roles selected. Try searching for "engineer" or "executive".
-                  </p>
-                )}
-              </div>
-
-              <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
-                <h4 className="font-semibold mb-2 flex items-center gap-2">
-                  <Crown className="w-4 h-4" />
-                  Enterprise Features
-                </h4>
-                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                  <li>• Hierarchical role categorization</li>
-                  <li>• Icon-based visual identification</li>
-                  <li>• Smart search across roles and descriptions</li>
-                  <li>• Multi-selection with tag management</li>
-                  <li>• Accessibility-first design</li>
-                  <li>• Enterprise-grade performance</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Use Case Examples */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Team Management
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  Perfect for HR systems, project management tools, and organizational charts.
-                </p>
-                <div className="space-y-2">
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Features</span>
-                  <ul className="text-sm space-y-1">
-                    <li>✓ Role hierarchy visualization</li>
-                    <li>✓ Permission level indicators</li>
-                    <li>✓ Department categorization</li>
-                    <li>✓ Bulk assignment capabilities</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Network className="w-5 h-5" />
-                  System Integration
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  Seamlessly integrates with LDAP, Active Directory, and SSO providers.
-                </p>
-                <div className="space-y-2">
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Integrations</span>
-                  <ul className="text-sm space-y-1">
-                    <li>✓ Active Directory sync</li>
-                    <li>✓ SAML/OAuth2 compatible</li>
-                    <li>✓ Real-time user updates</li>
-                    <li>✓ Audit trail support</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Code Examples */}
-        <TabsContent value="code" className="space-y-6">
-          {Object.entries(codeExamples).map(([key, code]) => (
-            <Card key={key}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="capitalize">{key.replace('_', ' ')} Example</CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => copyToClipboard(code)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto text-sm">
-                  <code>{code}</code>
-                </pre>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-
-        {/* API Reference */}
-        <TabsContent value="api" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>API Reference</CardTitle>
-              <CardDescription>Complete props and methods documentation</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-8">
-                {/* Props Table */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">Props</h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full border border-gray-200 dark:border-gray-700 rounded-lg">
-                      <thead className="bg-gray-50 dark:bg-gray-800">
-                        <tr>
-                          <th className="text-left p-3 font-semibold">Prop</th>
-                          <th className="text-left p-3 font-semibold">Type</th>
-                          <th className="text-left p-3 font-semibold">Default</th>
-                          <th className="text-left p-3 font-semibold">Description</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {[
-                          { prop: 'options', type: 'SelectOption[]', default: '[]', desc: 'Array of selectable options' },
-                          { prop: 'value', type: 'string | string[]', default: 'undefined', desc: 'Controlled value' },
-                          { prop: 'defaultValue', type: 'string | string[]', default: 'undefined', desc: 'Default uncontrolled value' },
-                          { prop: 'placeholder', type: 'string', default: '"Select..."', desc: 'Placeholder text' },
-                          { prop: 'onValueChange', type: '(value) => void', default: 'undefined', desc: 'Value change callback' },
-                          { prop: 'disabled', type: 'boolean', default: 'false', desc: 'Disable the select' },
-                          { prop: 'searchable', type: 'boolean', default: 'false', desc: 'Enable search functionality' },
-                          { prop: 'clearable', type: 'boolean', default: 'false', desc: 'Show clear button' },
-                          { prop: 'multiple', type: 'boolean', default: 'false', desc: 'Allow multiple selections' },
-                          { prop: 'variant', type: 'SelectVariant', default: '"default"', desc: 'Visual variant' },
-                          { prop: 'size', type: 'SelectSize', default: '"default"', desc: 'Size variant' },
-                          { prop: 'error', type: 'boolean', default: 'false', desc: 'Show error state' },
-                          { prop: 'loading', type: 'boolean', default: 'false', desc: 'Show loading state' },
-                        ].map((row, index) => (
-                          <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                            <td className="p-3 font-mono text-sm text-purple-600 dark:text-purple-400">{row.prop}</td>
-                            <td className="p-3 font-mono text-sm">{row.type}</td>
-                            <td className="p-3 font-mono text-sm text-gray-600 dark:text-gray-400">{row.default}</td>
-                            <td className="p-3 text-sm">{row.desc}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Types */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">Types</h3>
-                  <div className="space-y-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-base">SelectOption</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm overflow-x-auto">
-{`interface SelectOption {
-  value: string
-  label: string
-  disabled?: boolean
-  icon?: React.ReactNode
-  description?: string
-}`}
-                        </pre>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-base">SelectVariant</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm overflow-x-auto">
-{`type SelectVariant = 
-  | 'default' 
-  | 'filled' 
-  | 'outlined' 
-  | 'ghost' 
-  | 'neon'`}
-                        </pre>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-
-                {/* Usage Examples */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">Advanced Usage</h3>
-                  <Card>
-                    <CardContent className="p-4">
-                      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm overflow-x-auto">
-{`// Enterprise team selection with async loading
-const TeamSelector = () => {
-  const [teams, setTeams] = useState([]);
-  const [loading, setLoading] = useState(false);
-  
-  const loadTeams = async () => {
-    setLoading(true);
-    const data = await api.getTeams();
-    setTeams(data.map(team => ({
-      value: team.id,
-      label: team.name,
-      icon: <Building className="w-4 h-4" />,
-      description: \`\${team.memberCount} members\`
-    })));
-    setLoading(false);
-  };
-  
-  return (
-    <Select
-      options={teams}
-      onValueChange={handleTeamChange}
-      placeholder="Select team..."
-      searchable
-      multiple
-      loading={loading}
-      onFocus={loadTeams}
-      variant="outlined"
-      size="lg"
-    />
-  );
-};`}
-                      </pre>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* Installation & Setup */}
-      <Card className="mt-12">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Code className="w-5 h-5" />
-            Installation & Setup
-          </CardTitle>
-          <CardDescription>
-            Get started with the advanced Select component in your project
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="font-semibold mb-3">Installation</h3>
-              <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">
-                <code>npm install @maw-ui/select framer-motion</code>
-              </pre>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-3">Import</h3>
-              <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">
-                <code>{`import { Select } from '@maw-ui/select'`}</code>
-              </pre>
+      <div className="relative z-10 space-y-12 px-4 py-8">
+        {/* Navigation Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex items-center justify-between mb-6"
+        >
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              onClick={handleBackToComponents}
+              leftIcon={<ArrowLeft className="w-4 h-4" />}
+            >
+              Back to Components
+            </Button>
+            
+            <div className="flex gap-2">
+              {canNavigatePrevious() && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrevious}
+                  leftIcon={<ChevronLeft className="w-4 h-4" />}
+                >
+                  Previous
+                </Button>
+              )}
+              {canNavigateNext() && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNext}
+                  rightIcon={<ChevronRight className="w-4 h-4" />}
+                >
+                  Next
+                </Button>
+              )}
             </div>
           </div>
           
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
-            <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">
-              💡 Pro Tips for Enterprise Usage
-            </h4>
-            <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-              <li>• Use `searchable` for lists with &gt;10 options</li>
-              <li>• Implement virtual scrolling for &gt;1000 items</li>
-              <li>• Consider async loading for dynamic data</li>
-              <li>• Always provide meaningful descriptions for accessibility</li>
-              <li>• Use consistent icons across similar option types</li>
-            </ul>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" size="sm">
+              Component Demo
+            </Badge>
+            <Badge variant="primary" size="sm">
+              Select
+            </Badge>
           </div>
-        </CardContent>
-      </Card>
+        </motion.div>
+
+        {/* Hero Section */}
+        <motion.div
+          ref={heroRef}
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center space-y-8"
+        >
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+            >
+              <Sparkles className="w-12 h-12 text-blue-500" />
+            </motion.div>
+            <Badge variant="glass" className="text-lg px-6 py-2">
+              Advanced Select Components
+            </Badge>
+            <motion.div
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Rocket className="w-12 h-12 text-purple-500" />
+            </motion.div>
+          </div>
+
+          <motion.h1 
+            className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent"
+            initial={{ scale: 0.5 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            Smart Select System
+          </motion.h1>
+
+          <motion.p 
+            className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            Experience the most powerful select component with search capabilities, 
+            multi-selection, dynamic filtering, and premium animations for modern web applications.
+          </motion.p>
+        </motion.div>
+
+        {/* Interactive Demo Selector */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <Layers className="w-6 h-6" />
+                Interactive Demo Scenarios
+                <Badge variant="outline">Choose Your Experience</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {demoScenarios.map((scenario) => (
+                  <motion.button
+                    key={scenario.id}
+                    onClick={() => setActiveDemo(scenario.id)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`p-6 rounded-xl border-2 transition-all duration-300 ${
+                      activeDemo === scenario.id
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${scenario.color} p-2 mb-4 mx-auto`}>
+                      <scenario.icon className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                      {scenario.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {scenario.description}
+                    </p>
+                  </motion.button>
+                ))}
+              </div>
+              
+              {/* Demo Content */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeDemo}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {activeDemo === 'country' && <CountryDemo formData={formData} handleSelectChange={handleSelectChange} />}
+                  {activeDemo === 'skills' && <SkillsDemo formData={formData} handleSelectChange={handleSelectChange} />}
+                  {activeDemo === 'priority' && <PriorityDemo formData={formData} handleSelectChange={handleSelectChange} />}
+                  {activeDemo === 'category' && <CategoryDemo formData={formData} handleSelectChange={handleSelectChange} />}
+                </motion.div>
+              </AnimatePresence>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Select Variants Showcase */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.0 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <Palette className="w-6 h-6" />
+                Select Variants & Styles
+                <Badge variant="primary">5 Variants</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <VariantsShowcase />
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Advanced Features */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <Target className="w-6 h-6" />
+                Advanced Features & States
+                <Badge variant="outline">Enterprise Ready</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AdvancedFeaturesDemo loading={loading} handleLoadingDemo={handleLoadingDemo} />
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Code Examples */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.4 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 justify-between">
+                <div className="flex items-center gap-3">
+                  <Code className="w-6 h-6" />
+                  Implementation Examples
+                  <Badge variant="outline">Copy & Paste Ready</Badge>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCodeVisible(!codeVisible)}
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  {codeVisible ? 'Hide' : 'Show'} Code
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <AnimatePresence>
+              {codeVisible && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  <CardContent>
+                    <CodeExamplesSection 
+                      selectedExample={selectedCodeExample}
+                      setSelectedExample={setSelectedCodeExample}
+                      codeExamples={codeExamples}
+                      copyToClipboard={copyToClipboard}
+                    />
+                  </CardContent>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Card>
+        </motion.div>
+
+        {/* Performance Metrics */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.6 }}
+        >
+          <PerformanceMetrics />
+        </motion.div>
+      </div>
     </div>
   );
-}; 
+};
+
+// Sub-components for different demo scenarios
+const CountryDemo: React.FC<{
+  formData: Record<string, string | string[]>;
+  handleSelectChange: (field: string, value: string | string[]) => void;
+}> = ({ formData, handleSelectChange }) => (
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="space-y-6">
+      <h3 className="text-xl font-semibold flex items-center gap-2">
+        <Globe className="w-5 h-5" />
+        Global Location Selection
+      </h3>
+      
+      <Select
+        options={countryOptions}
+        value={formData.country}
+        placeholder="Search and select your country..."
+        searchable
+        clearable
+        variant="outlined"
+        size="lg"
+        onValueChange={(value) => handleSelectChange('country', value)}
+      />
+
+      <Select
+        options={[
+          { value: 'utc-12', label: 'UTC-12:00 (Baker Island)' },
+          { value: 'utc-11', label: 'UTC-11:00 (American Samoa)' },
+          { value: 'utc-10', label: 'UTC-10:00 (Hawaii)' },
+          { value: 'utc-9', label: 'UTC-09:00 (Alaska)' },
+          { value: 'utc-8', label: 'UTC-08:00 (Pacific Time)' },
+          { value: 'utc-7', label: 'UTC-07:00 (Mountain Time)' },
+          { value: 'utc-6', label: 'UTC-06:00 (Central Time)' },
+          { value: 'utc-5', label: 'UTC-05:00 (Eastern Time)' },
+          { value: 'utc+0', label: 'UTC+00:00 (London)' },
+          { value: 'utc+9', label: 'UTC+09:00 (Tokyo, Seoul)' },
+        ]}
+        value={formData.timezone}
+        placeholder="Select timezone..."
+        searchable
+        variant="default"
+        onValueChange={(value) => handleSelectChange('timezone', value)}
+      />
+
+      <Select
+        options={[
+          { value: 'en', label: 'English', icon: <Flag className="w-4 h-4" /> },
+          { value: 'ja', label: '日本語', icon: <Flag className="w-4 h-4" /> },
+          { value: 'ko', label: '한국어', icon: <Flag className="w-4 h-4" /> },
+          { value: 'zh', label: '中文', icon: <Flag className="w-4 h-4" /> },
+          { value: 'es', label: 'Español', icon: <Flag className="w-4 h-4" /> },
+          { value: 'fr', label: 'Français', icon: <Flag className="w-4 h-4" /> },
+          { value: 'de', label: 'Deutsch', icon: <Flag className="w-4 h-4" /> },
+        ]}
+        value={formData.language}
+        placeholder="Select language..."
+        variant="filled"
+        onValueChange={(value) => handleSelectChange('language', value)}
+      />
+    </div>
+
+    <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6">
+      <h4 className="font-semibold mb-4 flex items-center gap-2">
+        <MapPin className="w-5 h-5" />
+        Selected Location Details
+      </h4>
+      
+      <div className="space-y-3">
+        <div>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Country:</span>
+          <p className="font-medium">{formData.country || 'No country selected'}</p>
+        </div>
+        <div>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Timezone:</span>
+          <p className="font-medium">{formData.timezone || 'No timezone selected'}</p>
+        </div>
+        <div>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Language:</span>
+          <p className="font-medium">{formData.language || 'No language selected'}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const SkillsDemo: React.FC<{
+  formData: Record<string, string | string[]>;
+  handleSelectChange: (field: string, value: string | string[]) => void;
+}> = ({ formData, handleSelectChange }) => (
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="space-y-6">
+      <h3 className="text-xl font-semibold flex items-center gap-2">
+        <Star className="w-5 h-5" />
+        Multi-Select Skills
+      </h3>
+      
+      <Select
+        options={skillOptions}
+        value={formData.skills}
+        placeholder="Select your technical skills..."
+        multiple
+        searchable
+        clearable
+        variant="outlined"
+        size="lg"
+        onValueChange={(value) => handleSelectChange('skills', value)}
+      />
+
+      <Select
+        options={categoryOptions}
+        value={formData.category}
+        placeholder="Select your specialization..."
+        searchable
+        clearable
+        variant="default"
+        onValueChange={(value) => handleSelectChange('category', value)}
+      />
+    </div>
+
+    <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-6">
+      <h4 className="font-semibold mb-4 flex items-center gap-2">
+        <CheckCircle className="w-5 h-5" />
+        Skills Summary
+      </h4>
+      
+      <div className="space-y-4">
+        <div>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Selected Skills:</span>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {Array.isArray(formData.skills) && formData.skills.length > 0 ? (
+              formData.skills.map((skill: string) => (
+                <Badge key={skill} variant="primary" size="sm">
+                  {skillOptions.find(opt => opt.value === skill)?.label || skill}
+                </Badge>
+              ))
+            ) : (
+              <span className="text-gray-500">No skills selected</span>
+            )}
+          </div>
+        </div>
+        <div>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Specialization:</span>
+          <p className="font-medium">{formData.category || 'No specialization selected'}</p>
+        </div>
+        <div>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Skills Count:</span>
+          <p className="font-medium">{Array.isArray(formData.skills) ? formData.skills.length : 0}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const PriorityDemo: React.FC<{
+  formData: Record<string, string | string[]>;
+  handleSelectChange: (field: string, value: string | string[]) => void;
+}> = ({ formData, handleSelectChange }) => (
+  <div className="space-y-6">
+    <h3 className="text-xl font-semibold flex items-center gap-2">
+      <Flag className="w-5 h-5" />
+      Priority & Status Selection
+    </h3>
+    
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <Select
+        options={priorityOptions}
+        value={formData.priority}
+        placeholder="Select priority level..."
+        variant="default"
+        size="lg"
+        onValueChange={(value) => handleSelectChange('priority', value)}
+      />
+
+      <Select
+        options={[
+          { value: 'draft', label: 'Draft', icon: <AlertCircle className="w-4 h-4 text-gray-500" /> },
+          { value: 'review', label: 'In Review', icon: <Clock className="w-4 h-4 text-yellow-500" /> },
+          { value: 'approved', label: 'Approved', icon: <CheckCircle className="w-4 h-4 text-green-500" /> },
+          { value: 'rejected', label: 'Rejected', icon: <X className="w-4 h-4 text-red-500" /> },
+        ]}
+        placeholder="Select status..."
+        variant="outlined"
+        size="lg"
+      />
+
+      <Select
+        options={[
+          { value: 'planning', label: 'Planning Phase' },
+          { value: 'development', label: 'In Development' },
+          { value: 'testing', label: 'Testing' },
+          { value: 'deployment', label: 'Deployment' },
+          { value: 'completed', label: 'Completed' },
+        ]}
+        placeholder="Select project phase..."
+        variant="filled"
+        size="lg"
+      />
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+      {[
+        { title: 'Task Priority', value: formData.priority, options: priorityOptions },
+        { title: 'Status Overview', value: 'Active selections will appear here', options: [] },
+      ].map((item, index) => (
+        <motion.div
+          key={item.title}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.1 }}
+          className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+        >
+          <h4 className="font-medium mb-3">{item.title}</h4>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {item.value || 'No selection made'}
+          </p>
+        </motion.div>
+      ))}
+    </div>
+  </div>
+);
+
+const CategoryDemo: React.FC<{
+  formData: Record<string, string | string[]>;
+  handleSelectChange: (field: string, value: string | string[]) => void;
+}> = ({ formData, handleSelectChange }) => (
+  <div className="space-y-6">
+    <h3 className="text-xl font-semibold flex items-center gap-2">
+      <Filter className="w-5 h-5" />
+      Advanced Category Filtering
+    </h3>
+    
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="space-y-6">
+        <Select
+          options={categoryOptions}
+          value={formData.category}
+          placeholder="Filter by category..."
+          searchable
+          clearable
+          variant="neon"
+          size="lg"
+          onValueChange={(value) => handleSelectChange('category', value)}
+        />
+
+        <Select
+          options={[
+            { value: 'engineering', label: 'Engineering', icon: <Code className="w-4 h-4" /> },
+            { value: 'design', label: 'Design', icon: <Palette className="w-4 h-4" /> },
+            { value: 'product', label: 'Product', icon: <Target className="w-4 h-4" /> },
+            { value: 'marketing', label: 'Marketing', icon: <TrendingUp className="w-4 h-4" /> },
+            { value: 'sales', label: 'Sales', icon: <Building className="w-4 h-4" /> },
+            { value: 'support', label: 'Support', icon: <Shield className="w-4 h-4" /> },
+          ]}
+          value={formData.department}
+          placeholder="Select department..."
+          variant="ghost"
+          size="lg"
+          onValueChange={(value) => handleSelectChange('department', value)}
+        />
+
+        <Select
+          options={[
+            { value: 'junior', label: 'Junior Level', description: '0-2 years experience' },
+            { value: 'mid', label: 'Mid Level', description: '2-5 years experience' },
+            { value: 'senior', label: 'Senior Level', description: '5+ years experience' },
+            { value: 'lead', label: 'Lead/Principal', description: '8+ years experience' },
+            { value: 'executive', label: 'Executive', description: 'Leadership role' },
+          ]}
+          value={formData.role}
+          placeholder="Select experience level..."
+          searchable
+          variant="outlined"
+          size="lg"
+          onValueChange={(value) => handleSelectChange('role', value)}
+        />
+      </div>
+
+      <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6">
+        <h4 className="font-semibold mb-4 flex items-center gap-2">
+          <Tag className="w-5 h-5" />
+          Filter Results
+        </h4>
+        
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">24</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Total Results</div>
+            </div>
+            <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
+              <div className="text-2xl font-bold text-green-600">8</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Matched</div>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="text-sm text-gray-600 dark:text-gray-400">Active Filters:</div>
+            <div className="flex flex-wrap gap-2">
+              {[formData.category, formData.department, formData.role].filter(Boolean).map((filter, index) => (
+                <Badge key={index} variant="outline" size="sm">
+                  {filter as string}
+                </Badge>
+              ))}
+              {![formData.category, formData.department, formData.role].some(Boolean) && (
+                <span className="text-gray-500 text-sm">No filters applied</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const VariantsShowcase: React.FC = () => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+    {[
+      { variant: 'default' as const, title: 'Default', bg: 'bg-white dark:bg-gray-800' },
+      { variant: 'filled' as const, title: 'Filled', bg: 'bg-gray-50 dark:bg-gray-700' },
+      { variant: 'outlined' as const, title: 'Outlined', bg: 'bg-white dark:bg-gray-800' },
+      { variant: 'ghost' as const, title: 'Ghost', bg: 'bg-transparent' },
+      { variant: 'neon' as const, title: 'Neon', bg: 'bg-black' },
+    ].map((item, index) => (
+      <motion.div
+        key={item.variant}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: index * 0.1 }}
+        className={`p-6 rounded-xl ${item.bg} border border-gray-200 dark:border-gray-700 ${item.variant === 'neon' ? 'border-cyan-400' : ''}`}
+      >
+        <div className="mb-4">
+          <Badge variant="outline" className="mb-3">{item.title}</Badge>
+          <Select
+            options={[
+              { value: '1', label: 'Option 1' },
+              { value: '2', label: 'Option 2' },
+              { value: '3', label: 'Option 3' },
+            ]}
+            placeholder={`${item.title} select...`}
+            variant={item.variant}
+            size="sm"
+          />
+        </div>
+      </motion.div>
+    ))}
+  </div>
+);
+
+const AdvancedFeaturesDemo: React.FC<{
+  loading: Record<string, boolean>;
+  handleLoadingDemo: (key: string) => Promise<void>;
+}> = ({ loading, handleLoadingDemo }) => (
+  <div className="space-y-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="space-y-4">
+        <h4 className="font-semibold flex items-center gap-2">
+          <Search className="w-5 h-5" />
+          Searchable Options
+        </h4>
+        <Select
+          options={countryOptions}
+          placeholder="Search countries..."
+          searchable
+          size="lg"
+        />
+        <Select
+          options={skillOptions}
+          placeholder="Search skills..."
+          searchable
+          clearable
+          multiple
+        />
+      </div>
+
+      <div className="space-y-4">
+        <h4 className="font-semibold flex items-center gap-2">
+          <Zap className="w-5 h-5" />
+          Loading & States
+        </h4>
+        <Select
+          options={priorityOptions}
+          placeholder="Loading example..."
+          loading={loading.demo1}
+          onValueChange={() => handleLoadingDemo('demo1')}
+        />
+        <Select
+          options={categoryOptions}
+          placeholder="Error state example"
+          error
+        />
+      </div>
+
+      <div className="space-y-4">
+        <h4 className="font-semibold flex items-center gap-2">
+          <Target className="w-5 h-5" />
+          Sizes & Options
+        </h4>
+        <Select options={priorityOptions} placeholder="Small size" size="sm" />
+        <Select options={countryOptions} placeholder="Large size" size="lg" clearable />
+      </div>
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+      <div>
+        <h4 className="font-semibold mb-4">Multi-Selection</h4>
+        <div className="space-y-4">
+          <Select
+            options={skillOptions}
+            placeholder="Select multiple skills..."
+            multiple
+            searchable
+            clearable
+          />
+          <Select
+            options={categoryOptions}
+            placeholder="Multiple categories..."
+            multiple
+            variant="outlined"
+          />
+        </div>
+      </div>
+
+      <div>
+        <h4 className="font-semibold mb-4">Icons & Descriptions</h4>
+        <div className="space-y-4">
+          <Select
+            options={priorityOptions}
+            placeholder="Options with icons..."
+            searchable
+          />
+          <Select
+            options={[
+              { value: 'opt1', label: 'Option 1', description: 'Detailed description here' },
+              { value: 'opt2', label: 'Option 2', description: 'Another description' },
+              { value: 'opt3', label: 'Option 3', description: 'More details available' },
+            ]}
+            placeholder="Options with descriptions..."
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const CodeExamplesSection: React.FC<{
+  selectedExample: string;
+  setSelectedExample: (example: string) => void;
+  codeExamples: Record<string, string>;
+  copyToClipboard: (text: string) => void;
+}> = ({ selectedExample, setSelectedExample, codeExamples, copyToClipboard }) => (
+  <div className="space-y-6">
+    <div className="flex flex-wrap gap-2">
+      {Object.keys(codeExamples).map((key) => (
+        <Button
+          key={key}
+          variant={selectedExample === key ? "default" : "outline"}
+          size="sm"
+          onClick={() => setSelectedExample(key)}
+          className="capitalize"
+        >
+          {key}
+        </Button>
+      ))}
+    </div>
+
+    <div className="relative">
+      <div className="absolute top-4 right-4 z-10">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => copyToClipboard(codeExamples[selectedExample])}
+        >
+          <Copy className="w-4 h-4" />
+        </Button>
+      </div>
+      <pre className="bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto">
+        <code>{codeExamples[selectedExample]}</code>
+      </pre>
+    </div>
+  </div>
+);
+
+const PerformanceMetrics: React.FC = () => (
+  <Card>
+    <CardHeader>
+      <CardTitle className="flex items-center gap-3">
+        <TrendingUp className="w-6 h-6" />
+        Performance Metrics
+        <Badge variant="primary">Optimized</Badge>
+      </CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { label: 'Bundle Size', value: '15.4kb', icon: Database, color: 'text-green-500' },
+          { label: 'Render Time', value: '1.2ms', icon: Zap, color: 'text-blue-500' },
+          { label: 'Memory Usage', value: '2.1MB', icon: Cpu, color: 'text-purple-500' },
+          { label: 'Accessibility', value: '100%', icon: Shield, color: 'text-emerald-500' }
+        ].map((metric, index) => (
+          <motion.div
+            key={metric.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="text-center p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl"
+          >
+            <metric.icon className={`w-8 h-8 mx-auto mb-3 ${metric.color}`} />
+            <div className={`text-2xl font-bold ${metric.color} mb-1`}>
+              {metric.value}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              {metric.label}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </CardContent>
+  </Card>
+);
+
+export default SelectDemo; 
