@@ -117,7 +117,7 @@ const Carousel = forwardRef<HTMLDivElement, CarouselProps>(
     const [isPaused, setIsPaused] = useState(false)
     const [dragConstraints, setDragConstraints] = useState({ left: 0, right: 0 })
     const containerRef = useRef<HTMLDivElement>(null)
-    const intervalRef = useRef<ReturnType<typeof setInterval>>()
+    const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
 
     // Responsive settings
     const [currentSlidesToShow, setCurrentSlidesToShow] = useState(slidesToShow)
@@ -543,14 +543,12 @@ export const ThumbnailCarousel: React.FC<ThumbnailCarouselProps> = ({
 // 3D Carousel Component
 export interface Carousel3DProps extends Omit<CarouselProps, 'effect'> {
   perspective?: number
-  rotateY?: number
   depth?: number
 }
 
 export const Carousel3D: React.FC<Carousel3DProps> = ({
   items,
   perspective = 1000,
-  rotateY = 45,
   depth = 200,
   ...carouselProps
 }) => {
@@ -560,6 +558,11 @@ export const Carousel3D: React.FC<Carousel3DProps> = ({
     const angle = ((index - currentIndex) * 360) / items.length
     const translateZ = index === currentIndex ? depth : 0
     return `rotateY(${angle}deg) translateZ(${translateZ}px)`
+  }
+
+  const handleSlideChange = (index: number) => {
+    setCurrentIndex(index)
+    carouselProps.onSlideChange?.(index)
   }
 
   return (
@@ -586,7 +589,7 @@ export const Carousel3D: React.FC<Carousel3DProps> = ({
               duration: 0.6, 
               ease: [0.25, 0.46, 0.45, 0.94] 
             }}
-            onClick={() => setCurrentIndex(index)}
+            onClick={() => handleSlideChange(index)}
           >
             <div className="w-full h-full bg-white rounded-xl shadow-lg overflow-hidden">
               {item.image ? (
@@ -614,7 +617,7 @@ export const Carousel3D: React.FC<Carousel3DProps> = ({
               "w-2 h-2 rounded-full transition-all duration-200",
               index === currentIndex ? "bg-blue-500" : "bg-gray-300 hover:bg-gray-400"
             )}
-            onClick={() => setCurrentIndex(index)}
+            onClick={() => handleSlideChange(index)}
           />
         ))}
       </div>

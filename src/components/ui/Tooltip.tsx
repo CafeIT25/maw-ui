@@ -45,7 +45,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<number>();
+  const timeoutRef = useRef<number | undefined>(undefined);
 
   const variantClasses = {
     default: 'bg-gray-900 text-white border border-gray-700',

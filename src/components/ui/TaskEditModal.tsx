@@ -255,8 +255,11 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
                       Due Date
                     </label>
                     <DatePicker
-                      selected={formData.dueDate ? new Date(formData.dueDate) : null}
-                      onSelect={(date: Date | null) => setFormData(prev => ({ ...prev, dueDate: date || undefined }))}
+                      value={formData.dueDate ? new Date(formData.dueDate) : null}
+                      onChange={(date: Date | [Date, Date] | null) => {
+                        const selectedDate = Array.isArray(date) ? date[0] : date;
+                        setFormData(prev => ({ ...prev, dueDate: selectedDate || undefined }));
+                      }}
                       variant="default"
                       placeholder="Select due date"
                     />
