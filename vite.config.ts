@@ -8,4 +8,25 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          motion: ['framer-motion'],
+        }
+      }
+    }
+  },
+  server: {
+    port: 3000,
+    host: true
+  },
+  preview: {
+    port: 3000,
+    host: true
+  }
 })
