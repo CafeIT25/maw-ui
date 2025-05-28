@@ -32,13 +32,46 @@ This project is configured for deployment on Vercel with proper SPA routing supp
 
 #### vercel.json
 - Handles SPA routing by redirecting all routes to `/index.html`
-- Sets up caching headers for static assets
-- Configures function timeouts
+- Sets up caching headers for static assets (JS, CSS, images)
+- Optimized for Vite's asset structure
 
 #### Build Settings
 - Output directory: `dist`
 - Build command: `npm run build`
 - Node.js version: 18.x (recommended)
+
+### Vercel Configuration
+
+```json
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2))",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+}
+```
 
 ### Environment Variables
 
@@ -61,15 +94,31 @@ If you need environment variables, add them in Vercel dashboard:
 - Check that the rewrites configuration is correct
 - Verify build output goes to `dist` directory
 
+**Functions Error:**
+- This is a static SPA, no serverless functions needed
+- Ensure `vercel.json` doesn't include `functions` configuration
+
 **Build Failures:**
 - Check Node.js version compatibility
 - Ensure all dependencies are installed
 - Review build logs in Vercel dashboard
 
 **Performance Issues:**
-- Enable Edge Functions if needed
-- Configure proper caching headers
+- Static assets are cached for 1 year
 - Use Vercel Analytics for monitoring
+- Consider enabling Edge Functions only if needed
+
+### Project Structure
+```
+maw-app/
+├── dist/                 # Build output (generated)
+├── public/
+│   └── _redirects       # Fallback routing
+├── src/                 # React source code
+├── vercel.json          # Vercel configuration
+├── vite.config.ts       # Vite configuration
+└── package.json         # Dependencies
+```
 
 ### Additional Resources
 
